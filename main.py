@@ -6,4 +6,3 @@ from classes.package import *
 from classes.time_custom import *
 from classes.truck import *
 from tests.general_tests import *
-

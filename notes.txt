@@ -1,0 +1,40 @@
+----assoc with 
+
+---------------------------------------------------------------------------
+----assoc with git commit 3a7319a
+----meta note: to get the git commit, I first commit, then check the commit
+----hash, then paste it in this file, then git commit --amend --no-edit
+# TESTING IMPORTS
+# First, test main.py itself, with this
+hash_ex = Hash()
+print(str(hash_ex))
+# Then test imports in other modules. the below strategy is adequate:
+# put the following in main.py
+from tests.algorithms_tests import *
+from tests.hash_tests import *
+truck_test()
+cli.cli_test()
+algorithms_tests_test()
+general_tests_test()
+hash_test()
+# put in truck.py
+def truck_test():
+    function_for_testing_imports('1')
+# put in cli.py
+def cli_test():
+    function_for_testing_imports('2')
+# put in tests/algorithms_tests
+def algorithms_tests_test():
+    function_for_testing_imports('3')
+# put in tests/general_tests
+def general_tests_test():
+    function_for_testing_imports('4')
+# put in package
+def function_for_testing_imports(param):
+    print(f"well hello there{param}")
+# put in hash
+def hash_test():
+    hash_ex = Hash()
+    print(f"called from hash_tests, here's a hash: {str(hash_ex)}")
+----
+---- assoc with git commit ?

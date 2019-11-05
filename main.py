@@ -11,7 +11,7 @@ distance_csv = '/Users/adamisom/Desktop/WGUPS Distance Table.csv'
 package_csv = '/Users/adamisom/Desktop/WGUPS Package File.csv'
 
 packages, distances, Locations = load.load_data(distance_csv, package_csv)
-# known_destination_correction_times = [Time_Custom(10, 20, 00)]
+known_destination_correction_times = [Time_Custom(10, 20, 00)]
 truck_one, truck_two = Truck(), Truck()
 trucks = [truck_one, truck_two]
 
@@ -19,7 +19,7 @@ trucks = [truck_one, truck_two]
 def all_packages_delivered():
     '''Return whether all packages are delivered. UNTESTED.'''
     return True
-    # return all([pkg.status == Status(Status['DELIVERED']
+    # return all([pkg.status == PkgState['DELIVERED']
     #             for pkg in packages)])
 
 
@@ -45,7 +45,7 @@ while not all_packages_delivered() and number_of_loops < 100:
 
     for truck in trucks:
         pass
-        # if truck.location == destinations['WGU']:
+        # if truck.location == Locations['Hub']:
         #     last_arrival_time = last_arrival_time()
         #     last_correction_time = last_correction_time()
 
@@ -55,6 +55,6 @@ while not all_packages_delivered() and number_of_loops < 100:
         # route = algo.build_route(pkg_load)
         # truck.deliver(route)
 
-# cli.snapshot(Time_Custom(9, 00, 00))
-# cli.snapshot(Time_Custom(10, 00, 00))
-# cli.snapshot(Time_Custom(13, 00, 00))
+cli.snapshot(Time_Custom(9, 00, 00), packages, Locations)
+cli.snapshot(Time_Custom(10, 00, 00), packages, Locations)
+cli.snapshot(Time_Custom(13, 00, 00), packages, Locations)

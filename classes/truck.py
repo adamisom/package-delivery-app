@@ -13,6 +13,6 @@ class Truck():
         Called in/by: main.py ~15'''
         self.ID = Truck.id_counter
         Truck.id_counter += 1
-        self.location = 1  # Locations['HUB']
+        self.location = 1  # The hub is location 1
         self.time = Truck.first_delivery_time
         self.packages = []

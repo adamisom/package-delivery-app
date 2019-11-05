@@ -1,5 +1,42 @@
-----assoc with 
+----GOOD PLANNING - notes from How to Design Programs / HtDP
+TIPS
+	1. Keep a wish list around and as long as it's not empty, work from it
+	2. One function per task
+	3. Focus on the why, not how, especially in the purpose statement.
+Do not pay attention to how until you need to. (Especially for recursion.)
+	4. For some list processing you may want to ensure
+a list is non-empty before working with it.
 
+WISH LIST
+	1. meaningful name for the function
+	2. signature (consume/produce)
+	3. purpose statement
+
+SHORT DESIGN RECIPE
+	1. analyze problem
+	2. write what kind of data is consumed and produced, what is computed, and write a stub/signature
+	3. work through examples
+	4. outline the function
+	5. flesh out the function
+	6. test
+
+FUNCTION DESIGN RECIPE
+	1. tentative function-name and multi-line comment
+	2. sentence(s) on what it's supposed to, especially in terms of data
+	3. data definitions/context--what kind of data, and what it represents
+	4. parameters and return statement
+	5. one-line purpose
+	6. improve function name
+	7. delete sentence(s) from step 2
+	6. generate examples as given:/expect:
+	7. convert simpler examples to test(s)
+	8. develop the function
+	9. pass those test(s)
+	10. convert more examples into tests
+	11. develop the function
+	12. pass those tests
+	13. move the tests into a testing file and rerun them there
+	14. clean up the function
 ---------------------------------------------------------------------------
 ----assoc with git commit 3a7319a
 ----meta note: to get the git commit, I first commit, then check the commit

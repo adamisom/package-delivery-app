@@ -17,4 +17,6 @@ def snapshot(time_custom, packages, Locations):
     Data definitions:
     A Location is a namedtuple of location-number, landmark, street address.
     '''
+
+    # print(f'Locations: {Locations}')
     pass

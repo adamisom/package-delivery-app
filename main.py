@@ -10,7 +10,7 @@ from tests.general_tests import *
 distance_csv = '/Users/adamisom/Desktop/WGUPS Distance Table.csv'
 package_csv = '/Users/adamisom/Desktop/WGUPS Package File.csv'
 
-packages, distances, Locations = load.load_data(distance_csv, package_csv)
+distances, Locations, packages = load.load_data(distance_csv, package_csv)
 known_destination_correction_times = [Time_Custom(10, 20, 00)]
 truck_one, truck_two = Truck(), Truck()
 trucks = [truck_one, truck_two]

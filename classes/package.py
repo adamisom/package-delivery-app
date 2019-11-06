@@ -2,6 +2,7 @@ import re
 from collections import namedtuple
 from enum import Enum
 from .time_custom import *
+from .hash import *
 
 
 class PkgState(Enum):
@@ -21,61 +22,53 @@ class Package():
     def __init__(self, d, w, sn, location):
         '''Create Package object.
 
-        Called in/by: load.py ~191
-        Things it should do (remember, one function per task):
-            add all passed-in properties
-                notably including location(in place of address+city+state+zip)
-            parse special note and then set initial status
-            add state property
-            add history property
-
         Data definitions:
-        Special note: a property of a package that itself has four properties:
+        1. location: a namedtuple of num, landmark, address.
+        2. special note: a property of a package that itself has 4 properties:
             - truck_number
             - deliver_with
             - late_arrival
             - wrong_destination
         The first two of these sub-properties are used to set initial state.
-
-        Location: a namedtuple of location-number, landmark, street address.
         '''
-        self.ID = Package.id_counter
+        self.props = Hash(ID=Package.id_counter,
+                          deadline=d,
+                          weight=w,
+                          location=location)
+
         Package.id_counter += 1
 
-        self.deadline = d
-        self.weight = w
-        self.location = location
-
-        self.special_note = sn
+        self.props['special_note'] = sn
         self.mark_package_special(self.parse_special_note(sn))
 
-        self.state = None
+        self.props['state'] = None
         self.set_initial_state()
 
-        self.history = []
+        self.props['history'] = []
         self.set_initial_history()
 
     def set_state(self, state_string):
         '''Update state of a package.'''
-        self.state = PkgState(PkgState[state_string])
+        self.props['state'] = PkgState(PkgState[state_string])
 
     def set_initial_state(self):
         '''Set initial state of package to hub, late, or wrong-destination.'''
-        if self.special_note['late_arrival']:
+        if self.props['special_note']['late_arrival']:
             self.set_state('LATE_ARRIVAL')
-        elif self.special_note['wrong_destination']:
+        elif self.props['special_note']['wrong_destination']:
             self.set_state('WRONG_DESTINATION')
         else:
             self.set_state('AT_HUB')
 
     def set_initial_history(self):
         '''Set initial history of a package as at-hub at 7:59am.'''
-        self.history.append(
-            Package.History_Record(self.state, Time_Custom(7, 59, 00)))
+        self.props['history'].append(
+            Package.History_Record(self.props['state'],
+                                   Time_Custom(7, 59, 00)))
 
     def add_to_history(self, state_string, time):
         '''Add to history of a package object.'''
-        self.history.append(
+        self.props['history'].append(
             Package.History_Record(PkgState(PkgState[state_string]), time))
 
     def parse_special_note(self, special_note):
@@ -123,21 +116,23 @@ class Package():
         Sets four new properties on self.special_note, initialized to None,
         then updates the zero or one properties passed in as parsed_note.
         '''
-        self.special_note = dict.fromkeys(['truck_number', 'deliver_with',
-                                          'late_arrival', 'wrong_destination'])
-        if isinstance(parsed_note, dict):
-            self.special_note.update(parsed_note)
+        self.props['special_note'] = Hash('truck_number',
+                                          'deliver_with',
+                                          'late_arrival',
+                                          'wrong_destination')
+        if isinstance(parsed_note, Hash):
+            self.props['special_note'].update(parsed_note)
         # # a simple test:
         # if parsed_note is not None:
-        #     print("package special note is now: ", self.special_note)
+        #     print("package spec-note is now: ", self.props['special_note'])
 
     def __str__(self):
         '''Return string representation of a Package object.'''
-        return '\n\t'.join([f'Package ID: {self.ID}',
-                            f'delivery status: {self.state}',
-                            f'destination: {self.location.address}',
-                            f'deadline: {self.deadline}',
-                            f'weight: {self.weight}'])
+        return '\n\t'.join([f"Package ID: {self.props['ID']}",
+                            f"delivery status: {self.props['state']}",
+                            f"destination: {self.props['location'].address}",
+                            f"deadline: {self.props['deadline']}",
+                            f"weight: {self.props['weight']}"])
 
 
 '''

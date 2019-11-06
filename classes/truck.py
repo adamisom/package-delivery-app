@@ -10,9 +10,13 @@ class Truck():
 
     def __init__(self):
         '''Create Truck object.
-        Called in/by: main.py ~15'''
-        self.ID = Truck.id_counter
+        Called in/by: main.py ~15
+
+        Assumes trucks start at the hub.
+        '''
+        self.props = Hash(ID=Truck.id_counter,
+                          location=1,  # location 1 is the hub
+                          time=Truck.first_delivery_time,
+                          packages=[])
+
         Truck.id_counter += 1
-        self.location = 1  # The hub is location 1
-        self.time = Truck.first_delivery_time
-        self.packages = []

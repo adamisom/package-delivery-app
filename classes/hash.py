@@ -251,7 +251,11 @@ class Hash():
 
     @staticmethod
     def _deepcopy(lst):
-        '''Create a deep copy of a list.'''
+        '''Create a deep copy of a list.
+
+        This method was created intentionally to cut out an unneeded import,
+        namely deepcopy from copy.
+        '''
         result = []
 
         for item in lst:

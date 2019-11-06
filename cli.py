@@ -63,13 +63,13 @@ def package_status_at_time(package, time_custom):
     '''Return the status of a package at a given time.'''
     # if time_custom is before 7:59am, use the initial state
     if time_custom < Time_Custom(7, 59, 00):
-        return package.history[0].state
-    if len(package.history) == 1:
-        return package.history[0].state
-    for index, record in enumerate(package.history):
+        return package.props['history'][0].state
+    if len(package.props['history']) == 1:
+        return package.props['history'][0].state
+    for index, record in enumerate(package.props['history']):
         if record.time > time_custom:
             # go back one record
-            return package.history[index - 1].state
+            return package.props['history'][index - 1].state
 
 
 def package_snapshot(package, time_custom):

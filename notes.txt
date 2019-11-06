@@ -1,3 +1,5 @@
+
+
 ----GOOD PLANNING - notes from How to Design Programs / HtDP
 TIPS
 	1. Keep a wish list around and as long as it's not empty, work from it

@@ -1,5 +1,5 @@
-from classes.time_custom import *
-from classes.package import *
+from .classes.time_custom import Time_Custom
+from .classes.package import Package
 
 
 def give_user_instructions():

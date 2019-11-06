@@ -1,16 +1,16 @@
-import algorithms as algo
-import cli
-import load
-from classes.time_custom import *
-from classes.hash import *
-from classes.package import *
-from classes.truck import *
-from tests.general_tests import *
+from .algorithms import *
+from .cli import snapshot, handle_input
+from .load import load_data
+from .classes.time_custom import Time_Custom
+from .classes.hash import Hash
+from .classes.package import Package
+from .classes.truck import Truck
+from .tests.general_tests import *
 
 distance_csv = '/Users/adamisom/Desktop/WGUPS Distance Table.csv'
 package_csv = '/Users/adamisom/Desktop/WGUPS Package File.csv'
 
-distances, Locations, packages = load.load_data(distance_csv, package_csv)
+distances, Locations, packages = load_data(distance_csv, package_csv)
 known_destination_correction_times = [Time_Custom(10, 20, 00)]
 truck_one, truck_two = Truck(), Truck()
 trucks = [truck_one, truck_two]
@@ -55,8 +55,8 @@ while not all_packages_delivered() and number_of_loops < 100:
         # route = algo.build_route(pkg_load)
         # truck.deliver(route)
 
-cli.snapshot(Time_Custom(9, 00, 00), packages)
-# cli.snapshot(Time_Custom(10, 00, 00), packages)
-# cli.snapshot(Time_Custom(13, 00, 00), packages)
+snapshot(Time_Custom(9, 00, 00), packages)
+# snapshot(Time_Custom(10, 00, 00), packages)
+# snapshot(Time_Custom(13, 00, 00), packages)
 
-# cli.handle_input(packages)
+# handle_input(packages)

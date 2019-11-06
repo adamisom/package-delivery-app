@@ -1,1 +1,1 @@
-from classes.package import *
+from ..classes.package import *

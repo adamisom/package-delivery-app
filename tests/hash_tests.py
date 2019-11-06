@@ -1,1 +1,1 @@
-from classes.hash import *
+from ..classes.hash import *

@@ -1,6 +1,6 @@
 import csv
 from collections import namedtuple
-from classes.package import *
+from .classes.package import Package
 
 
 def read_distance_csv(csv_file):

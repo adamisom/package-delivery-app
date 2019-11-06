@@ -1,4 +1,5 @@
 import re
+from collections import namedtuple
 from enum import Enum
 from .time_custom import *
 
@@ -14,6 +15,8 @@ class PkgState(Enum):
 
 class Package():
     id_counter = 1
+
+    History_Record = namedtuple('History_Record', ['state', 'time'])
 
     def __init__(self, d, w, sn, location):
         '''Create Package object.
@@ -45,10 +48,12 @@ class Package():
 
         self.special_note = sn
         self.mark_package_special(self.parse_special_note(sn))
+
         self.state = None
         self.set_initial_state()
 
-        self.history = [(self.state, Time_Custom(8, 00, 00))]
+        self.history = []
+        self.set_initial_history()
 
     def set_state(self, state_string):
         '''Update state of a package.'''
@@ -62,6 +67,16 @@ class Package():
             self.set_state('WRONG_DESTINATION')
         else:
             self.set_state('AT_HUB')
+
+    def set_initial_history(self):
+        '''Set initial history of a package as at-hub at 7:59am.'''
+        self.history.append(
+            Package.History_Record(self.state, Time_Custom(7, 59, 00)))
+
+    def add_to_history(self, state_string, time):
+        '''Add to history of a package object.'''
+        self.history.append(
+            Package.History_Record(PkgState(PkgState[state_string]), time))
 
     def parse_special_note(self, special_note):
         '''Parse the special note (if any) attached to a package.
@@ -115,6 +130,14 @@ class Package():
         # # a simple test:
         # if parsed_note is not None:
         #     print("package special note is now: ", self.special_note)
+
+    def __str__(self):
+        '''Return string representation of a Package object.'''
+        return '\n\t'.join([f'Package ID: {self.ID}',
+                            f'delivery status: {self.state}',
+                            f'destination: {self.location.address}',
+                            f'deadline: {self.deadline}',
+                            f'weight: {self.weight}'])
 
 
 '''

@@ -55,6 +55,8 @@ while not all_packages_delivered() and number_of_loops < 100:
         # route = algo.build_route(pkg_load)
         # truck.deliver(route)
 
-cli.snapshot(Time_Custom(9, 00, 00), packages, Locations)
-cli.snapshot(Time_Custom(10, 00, 00), packages, Locations)
-cli.snapshot(Time_Custom(13, 00, 00), packages, Locations)
+# cli.snapshot(Time_Custom(9, 00, 00), packages)
+# cli.snapshot(Time_Custom(10, 00, 00), packages)
+# cli.snapshot(Time_Custom(13, 00, 00), packages)
+
+cli.handle_input(packages)

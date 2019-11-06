@@ -1,73 +1,223 @@
 import csv
 from collections import namedtuple
 from classes.package import *
-'''
- DONE   1. tentative function-name and multi-line comment
-    2. sentence(s) on what it's supposed to, especially in terms of data
-    3. data definitions/context--what kind of data, and what it represents
-    4. parameters and return statement
-    5. one-line purpose
-    6. improve function name
-    7. delete sentence(s) from step 2
-    6. generate examples as given:/expect:
-    7. convert simpler examples to test(s)
-    8. develop the function
-    9. pass those test(s)
-    10. convert more examples into tests
-    11. develop the function
-    12. pass those tests
-    13. move the tests into a testing file and rerun them there
-    14. clean up the function
-'''
 
 
-def read_distance_csv(csv):
-    '''.'''
+def read_distance_csv(csv_file):
+    '''Return list-of-lists representation of the contents of passed-in csv.
+
+    Remarks on csv: This whole program expects the passed-in csv to contain a
+    (skippable) header. It expects the list of locations appearing in the
+    first column to be identical to the list of locations in the first row.
+    It expects there to be a second column with location data, but this column
+    contains only street-addresses and zip-codes, not landmark names (like the
+    first row and column have). Finally, it expects that zip codes will
+    consistently appear only in this second column, and they will be wrapped
+    in parentheses.
+    None of these expectations should be read as an endorsement of the format
+    of the input csv. This is simply the format that the user provides.
+    '''
+    csv_data = []
+    with open(csv_file) as csvFile:
+        csvReader = csv.reader(csvFile)
+        for row in csvReader:
+            if row[0] != '':
+                csv_data.append(row)
+    return csv_data
 
 
-def clean_distance_data():
-    '''.'''
+def clean_address_data(column_one, column_two):
+    '''Return tuple of cleaned landmark and street address.'''
+
+    # In column one of csv, street-address is on a newline after landmark name
+    landmark = column_one.split('\n')[0].strip()
+
+    # In column two the format is 'address\n(zip)'--I prefer 'address zip'
+    # and that is the format to which package addresess will be matched
+    street_address = column_two.replace('\n(', ' ').rstrip(')').strip()
+
+    # Package addresses will have the same standard for direction abbreviation
+    # so that the two sets of addresses are consistent and therefore matchable
+    street_address = (street_address
+                      .replace('South', 'S')
+                      .replace('North', 'N')
+                      .replace('East', 'E')
+                      .replace('West', 'W'))
+
+    return landmark, street_address
 
 
-def fill_distance_data():
-    '''.'''
+def get_location_data(csv_data):
+    '''Return list of tuples of index, landmarks, and street addresses.'''
+    locations = []
+    for index, row in enumerate(csv_data):
+        if index != 0:
+            landmark, street_address = clean_address_data(row[0], row[1])
+            locations.append((index, landmark, street_address))
+    return locations
 
 
-def validate_distance_data():
-    '''.'''
+def populate_locations(location_data, Location_constructor):
+    '''Return list of location named-tuples from location data.'''
+    Locations = []
+    for location_datum in location_data:
+        Locations.append(Location_constructor(*location_datum))
+    return Locations
 
 
-def clean_address_data():
-    '''.'''
+def clean_distance_data(csv_data):
+    '''Remove redundant column, use location numbers instead of names,
+    and convert distance data (a mix of integer and string) to floats.
+    '''
+    for row_index, row in enumerate(csv_data):
+        del row[1]
+
+        for col_index, datum in enumerate(row):
+            if row_index != 0 and col_index != 0:
+                if datum != '':
+                    csv_data[row_index][col_index] = float(datum)
+
+        # row_index will be used for location numbers
+        if row_index != 0:
+            row[0] = row_index
+
+    # col_index will be used for location numbers
+    # Note that col_index coincides with (is the same value as) row_index.
+    for col_index, _ in enumerate(csv_data[0]):
+        if col_index != 0:
+            csv_data[0][col_index] = col_index
 
 
-def read_package_csv(csv):
-    '''.'''
+def fill_distance_data(data):
+    '''Fill in distance data where the missing pieces of data can be inferred.
+
+    If cell at [i,j] is missing, but [j,i] is known, fill [i,j] with [j,i],
+    and vice versa. Skip when neither or both are empty.
+    '''
+    for row_index, row in enumerate(data):
+        for col_index, distance in enumerate(row):
+            ij = data[row_index][col_index]
+            ji = data[col_index][row_index]
+
+            if ij == '' and ji != '':
+                data[row_index][col_index] = data[col_index][row_index]
+
+            elif ji == '' and ij != '':
+                data[col_index][row_index] = data[row_index][col_index]
 
 
-def clean_package_data():
-    '''.'''
+def validate_distance_data(data):
+    '''Validate distance data is both present and non-contradicting.'''
+    for row_index, row in enumerate(data):
+        for col_index, distance in enumerate(row):
+            ij = data[row_index][col_index]
+            ji = data[col_index][row_index]
+
+            if ij is None and ji is None:
+                return False
+            if ij != ji:
+                return False
+
+    return True
 
 
-def validate_package_address_data():
-    '''.'''
+def read_package_csv(csv_file):
+    '''Return list-of-lists representation of the contents of passed-in csv.
+
+    Remarks on csv: This whole program expects the passed-in csv to contain
+    a list of package attributes in the following order:
+        - Package ID
+        - Address
+        - City
+        - State
+        - Zip
+        - Delivery Deadline (a time-of-day)
+        - Mass (weight in kg)
+        - Special Notes
+            Note: The plural is a misnomor--only one special note is permitted
+    '''
+    csv_data = []
+    with open(csv_file) as csvFile:
+        csvReader = csv.reader(csvFile)
+        for row in csvReader:
+            if row[0].isdigit():
+                csv_data.append(row)
+    return csv_data
+
+
+def clean_package_data(csv_data):
+    '''Clean package data preliminarily to initializing package objects.'''
+    for row in csv_data:
+        # if deadline is 'EOD' or end of day, it can be ignored
+        if row[5] == 'EOD':
+            row[5] = None
+
+        # Distance addresses have the same standard for direction abbreviation
+        # so that the two sets of addresses are consistent and thus matchable
+        row[1] = (row[1]
+                  .replace('South', 'S')
+                  .replace('North', 'N')
+                  .replace('East', 'E')
+                  .replace('West', 'W'))
+
+        # only the first eight columns have data
+        del row[8:]
+
+
+def validate_package_address_data(package_data, location_namedtuples):
+    '''Validate all package address data matches a location address.'''
+    location_addresses = [loc[2] for loc in location_namedtuples]
+    for row in package_data:
+        package_address = f'{row[1]} {row[4]}'  # street address plus zip code
+        if package_address not in location_addresses:
+            return False
+    return True
+
+
+def get_package_destination(pkg_row, location_namedtuples):
+    '''Return the location named-tuple matching a package's destination.'''
+    package_address = f'{pkg_row[1]} {pkg_row[4]}'  # street address plus zip
+    location_addresses = [loc[2] for loc in location_namedtuples]
+    return location_namedtuples[location_addresses.index(package_address)]
+
+
+def populate_packages(package_data, location_namedtuples):
+    '''Return list of Package objects based on package data from the csv.'''
+    all_packages = []
+    for package_row in package_data:
+        destination = get_package_destination(package_row,
+                                              location_namedtuples)
+        # create new package object and add to list
+        new_package = Package(*package_row[5:], destination)
+        all_packages.append(new_package)
+    return all_packages
 
 
 def load_data(distance_csv, package_csv):
     '''Populate packages list, distances 2D list, Locations namedtuple list.
-    Called in/by: main.py ~13
 
-    Things it should do (remember, one function per task):
-        read/clean_dist/clean_addr/fill/validate distances csv
-        populate list of Locations
-        read/clean/validate package csv
-        create Package objects and return a list referencing all of them
-
-    Data definitions:
+    Data definition:
     A Location is a namedtuple of location-number, landmark, street address.
     '''
     distances, Locations, packages = [], [], []
 
     Location = namedtuple('Locations', ['num', 'landmark', 'address'])
-    Locations.append(Location(1, 'Hub', '4001 S 700 E 84107'))
+
+    distances = read_distance_csv(distance_csv)
+
+    # Locations populated first because clean_distance_data removes addresses
+    location_data = get_location_data(distances)
+    Locations = populate_locations(location_data, Location)
+    clean_distance_data(distances)
+    fill_distance_data(distances)
+
+    assert(validate_distance_data(distances))
+
+    package_data = read_package_csv(package_csv)
+    clean_package_data(package_data)
+
+    assert(validate_package_address_data(package_data, Locations))
+
+    packages = populate_packages(package_data, Locations)
+
     return distances, Locations, packages

@@ -25,24 +25,41 @@ class Truck():
 
     def update_late_packages(self, all_packages):
         '''Update all late-arriving packages that are now at the hub.'''
-        for pkg in all_packages:
-            pkg.update_late_package()
+        late_arrivals = [pkg for pkg in all_packages
+                         if pkg.props['special_note']['late_arrival']
+                         is not None]
 
-    def update_corrected_packages(self, all_packages):
+        for pkg in late_arrivals:
+            anticipated_arrival = pkg.props['special_note']['late_arrival']
+
+            if (self.props['time'] > anticipated_arrival and
+                    pkg.props['state'].name == 'LATE_ARRIVAL'):
+                pkg.update_late_as_arrived()
+
+    def update_corrected_packages(self, all_packages, destination_corrections):
         '''Update all packages that had a known wrong-destination at start of day
         but which have now been corrected, i.e., which can now be delivered.'''
-        for pkg in all_packages:
-            pkg.update_corrected_package()
+        wrong_destinations = [pkg for pkg in all_packages
+                              if pkg.props['special_note']['wrong_destination']
+                              is True]
 
-    def discover_packages_at_hub(self, last_arrival_time, last_correction_time,
-                                 all_packages):
-        '''Return list of packages at hub.'''
-        if (last_arrival_time is not None and
-           self.props['time'] > last_arrival_time):
-            self.update_late_packages(all_packages)
-        if (last_correction_time is not None and
-           self.props['time'] > last_correction_time):
-            self.update_corrected_packages(all_packages)
+        for pkg in wrong_destinations:
+            index = [correction.id for correction in
+                     destination_corrections].index(pkg.props['ID'])
+
+            updated_destination = destination_corrections[index]
+
+            if updated_destination.location is not None:
+                pkg.update_package_destination(updated_destination)
+
+                if pkg.props['state'].name == 'WRONG_DESTINATION':  # need if?
+                    pkg.update_wrong_destination_as_corrected()
+
+    def get_deliverable_packages(self, all_packages, destination_corrections):
+        '''Return list of packages at hub and update late or wrong-destination
+        packages that have (respectively) arrived or been corrected.'''
+        self.update_late_packages(all_packages)
+        self.update_corrected_packages(all_packages, destination_corrections)
         return [pkg for pkg in all_packages
                 if pkg.props['state'].name == 'AT_HUB']
 

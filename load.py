@@ -201,7 +201,7 @@ def load_data(distance_csv, package_csv):
     '''
     distances, Locations, packages = [], [], []
 
-    Location = namedtuple('Locations', ['num', 'landmark', 'address'])
+    Location = namedtuple('Location', ['num', 'landmark', 'address'])
 
     distances = read_distance_csv(distance_csv)
 

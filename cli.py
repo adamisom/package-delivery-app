@@ -1,5 +1,32 @@
+from collections import namedtuple
 from .classes.time_custom import Time_Custom
 from .classes.package import Package
+
+
+'''List of destination-correction namedtuples.
+
+A destination-correct namedtuple contains:
+    id:         Package ID
+    time:       Time by which we will know the correct destination
+    location:   Location* of the correct destination
+
+*Location is itself a namedtuple of num, landmark, address (see load.py).
+
+Purpose: Separating out 'when it will be known' from the destination itself
+lets us handle cases where a sender gave us the wrong address (and tells us),
+but needs some time to let us know the right address. It also lets us handle
+when we know we got it wrong, but know that we'll have the right information
+by a certain time later.
+Usage: this list is intended to be checked by truck drivers at the hub.
+If the time of correction has passed (time property), then the truck is
+responsible for updating the package to be available for pickup (state AT_HUB)
+with its destination updated to the location number found in the tuple. If the
+location property is still None, despite the time being past the time-of-
+correction, the package will not be updated.
+'''
+Destination_Correction = namedtuple('Destination_Correction',
+                                    ['id', 'time', 'location'])
+Destination_Corrections = []
 
 
 def give_user_instructions():
@@ -40,7 +67,10 @@ def validate_values(time_parts):
 
 
 def handle_input(packages):
-    '''Listen for user input and generate snapshot when input is valid.'''
+    '''Listen for user input and generate snapshot when input is valid.
+
+    TODO: Rename this. Also rename the get_destin... function name.
+    '''
     give_user_instructions()
 
     user_requested_time = input('Whenever you\'re ready...  ')
@@ -92,3 +122,10 @@ def snapshot(time_custom, packages):
     print(f'\nSNAPSHOT OF ALL PACKAGES AT {str(time_custom)}:')
     for package in packages:
         package_snapshot(package, time_custom)
+
+
+def get_destination_corrections_from_user(Locations):
+    '''TODO: Develop this function!'''
+    Destination_Corrections.append(
+        Destination_Correction(9, Time_Custom(10, 20, 00), None))
+    return Destination_Corrections

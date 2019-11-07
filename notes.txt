@@ -1,4 +1,17 @@
+---Reflections on TODOs and why I'm not doing them now.
 
+1. Updating package state for late or corrected packages.
+
+I may not need or want latest_arrival or latest_correction at all anymore,
+in main. I can update on a per-package basis.
+However, practically speaking, it might be helpful to simply deliver all late
+or corrected packages together, in a second trip. I don't know--I could easily
+compare performance. My truck/package update functions will be per-package,
+but I will try having trucks compare time to the global latest_ variables
+for now--and later, I can have them compare against the CURRENT package's
+special-note tine, which is more sensible. But for now--simple.
+
+2. ...
 
 ----GOOD PLANNING - notes from How to Design Programs / HtDP
 TIPS

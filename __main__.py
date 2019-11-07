@@ -49,10 +49,10 @@ while not all_packages_delivered() and number_of_loops < 100:
         #     last_arrival_time = last_arrival_time()
         #     last_correction_time = last_correction_time()
 
-        # pkgs_at_hub = truck.discover_packages_at_hub(la, lc)
-        # pkg_load = algo.pick_load(pkgs_at_hub)
+        # pkgs_at_hub = truck.discover_packages_at_hub(la, lc, packages)
+        # pkg_load = algorithms.pick_load(pkgs_at_hub, distances)
         # truck.load(pkg_load)
-        # route = algo.build_route(pkg_load)
+        # route = algorithms.build_route(pkg_load, distances)
         # truck.deliver(route)
 
 snapshot(Time_Custom(9, 00, 00), packages)

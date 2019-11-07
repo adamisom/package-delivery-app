@@ -25,7 +25,7 @@ def pick_load(pkgs_at_hub, distances):
     '''Return list of package IDs that performed the best from a simulation of
     many package selections and deliveries.'''
     pkg_load = random.sample(pkgs_at_hub, 16)  # if <16 at hub, program crashes
-    return
+    return pkg_load
 
 
 def dijkstras_route(pkg_load, distances):

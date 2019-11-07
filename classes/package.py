@@ -38,7 +38,10 @@ class Package():
 
         Package.id_counter += 1
 
-        self.props['special_note'] = sn
+        self.props['special_note'] = Hash('truck_number',
+                                          'deliver_with',
+                                          'late_arrival',
+                                          'wrong_destination')
         self.mark_package_special(self.parse_special_note(sn))
 
         self.props['state'] = None
@@ -107,16 +110,16 @@ class Package():
         wrong_destination_constraint = destination_regex_match(special_note)
 
         if truck_number_constraint:
-            truck = get_truck_number(special_note)
-            return dict(truck_number=truck)
+            truck_num = get_truck_number(special_note)
+            return 'truck_number', truck_num
         if co_delivery_constraint:
             package_list = get_packages_to_deliver_with(special_note)
-            return dict(deliver_with=package_list)
+            return 'deliver_with', package_list
         if late_arrival_constraint:
             when = Time_Custom(*get_arrival_time(special_note))
-            return dict(late_arrival=when)
+            return 'late_arrival', when
         if wrong_destination_constraint:
-            return dict(wrong_destination=True)
+            return 'wrong_destination', True
 
         assert (special_note == '')
         return None
@@ -127,15 +130,9 @@ class Package():
         Sets four new properties on self.special_note, initialized to None,
         then updates the zero or one properties passed in as parsed_note.
         '''
-        self.props['special_note'] = Hash('truck_number',
-                                          'deliver_with',
-                                          'late_arrival',
-                                          'wrong_destination')
-        if isinstance(parsed_note, Hash):
-            self.props['special_note'].update(parsed_note)
-        # # a simple test:
-        # if parsed_note is not None:
-        #     print("package spec-note is now: ", self.props['special_note'])
+        if parsed_note is not None:
+            parsed_note_key, parsed_note_value = parsed_note
+            self.props['special_note'][parsed_note_key] = parsed_note_value
 
     def __str__(self):
         '''Return string representation of a Package object.'''

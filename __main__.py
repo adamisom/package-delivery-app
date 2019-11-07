@@ -20,14 +20,22 @@ def all_packages_delivered(packages):
 
 
 def last_arrival_time(packages):
-    '''Return the time by which all packages will have arrived at the hub.'''
-    return max([pkg.props['special_note']['late_arrival']
+    '''Return the time by which all packages will have arrived at the hub.
+    TODO: make it so this isn't called every time. In fact, I'll most likely
+    get rid of the function (see notes.txt)
+    '''
+    return (max([pkg.props['special_note']['late_arrival']
                 for pkg in packages
                 if pkg.props['special_note']['late_arrival'] is not None])
+            if len(packages) > 0
+            else None)
 
 
-def last_correction_time(packages):
-    '''Return the time by which all destination corrections will be known.'''
+def last_correction_time(packages, known_destination_correction_times):
+    '''Return the time by which all destination corrections will be known.
+    TODO: make it so this isn't called every time. In fact, I'll most likely
+    get rid of the function (see notes.txt)
+    '''
     if any([pkg.props['special_note']['wrong_destination']
             for pkg in packages]):
         return max(known_destination_correction_times)
@@ -45,16 +53,17 @@ def run_program():
         number_of_loops += 1
 
         for truck in trucks:
-            pass
-            # if truck.location == Locations['Hub']:
-            #     last_arrival_time = last_arrival_time()
-            #     last_correction_time = last_correction_time()
+            if truck.props['location'] == 1:
+                last_arrival = last_arrival_time(packages)
+                last_correction = last_correction_time(
+                    packages, known_destination_correction_times)
+                la, lc = last_arrival, last_correction
 
-            # pkgs_at_hub = truck.discover_packages_at_hub(la, lc, packages)
-            # pkg_load = algorithms.pick_load(pkgs_at_hub, distances)
-            # truck.load(pkg_load)
-            # route = algorithms.build_route(pkg_load, distances)
-            # truck.deliver(route)
+                pkgs_at_hub = truck.discover_packages_at_hub(la, lc, packages)
+                pkg_load = pick_load(pkgs_at_hub, distances)
+                truck.load(pkg_load)
+                route = build_route(pkg_load, distances)
+                truck.deliver(route)
 
     snapshot(Time_Custom(9, 00, 00), packages)
     # snapshot(Time_Custom(10, 00, 00), packages)

@@ -13,6 +13,7 @@ class Truck():
         '''Create Truck object.
         Called in/by: main.py ~15
 
+        NOTE that 'location' actually refers to a location.num
         Assumes trucks start at the hub.
         '''
         self.props = Hash(ID=Truck.id_counter,
@@ -23,29 +24,29 @@ class Truck():
         Truck.id_counter += 1
 
     def update_late_packages(self, all_packages):
-        '''Update all late-arriving packages that are now at the hub.
-
-        TODO: have last_arrival_time passed in and use it.'''
+        '''Update all late-arriving packages that are now at the hub.'''
         for pkg in all_packages:
             pkg.update_late_package()
 
     def update_corrected_packages(self, all_packages):
         '''Update all packages that had a known wrong-destination at start of day
-        but which have now been corrected, i.e., which can now be delivered.
-
-        TODO: have last_correction_time passed in and use it.'''
+        but which have now been corrected, i.e., which can now be delivered.'''
         for pkg in all_packages:
             pkg.update_corrected_package()
 
     def discover_packages_at_hub(self, last_arrival_time, last_correction_time,
                                  all_packages):
-        '''Return list of packages at hub.
-
-        TODO: call the two helpers above this method.'''
+        '''Return list of packages at hub.'''
+        if (last_arrival_time is not None and
+           self.props['time'] > last_arrival_time):
+            self.update_late_packages(all_packages)
+        if (last_correction_time is not None and
+           self.props['time'] > last_correction_time):
+            self.update_corrected_packages(all_packages)
         return [pkg for pkg in all_packages
                 if pkg.props['state'].name == 'AT_HUB']
 
-    def load(self):
+    def load(self, pkg_load):
         '''Load truck with packages.
 
         What it should do:
@@ -53,7 +54,7 @@ class Truck():
         '''
         pass
 
-    def deliver(self):
+    def deliver(self, route):
         '''Deliver packages on truck.
 
         What it should do:

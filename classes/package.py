@@ -71,6 +71,17 @@ class Package():
         self.props['history'].append(
             Package.History_Record(PkgState(PkgState[state_string]), time))
 
+    def update_late_package(self):
+        '''Update a late-arriving package to indicate it is now at the hub.'''
+        if self.props['state'].name == 'LATE_ARRIVAL':
+            self.set_state('AT_HUB')
+
+    def update_corrected_package(self):
+        '''Update a wrong-destination package to indicate destination is now
+        known. In other words, it can be delivered.'''
+        if self.props['state'].name == 'WRONG_DESTINATION':
+            self.set_state('AT_HUB')
+
     def parse_special_note(self, special_note):
         '''Parse the special note (if any) attached to a package.
 

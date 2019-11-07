@@ -10,53 +10,57 @@ from .tests.general_tests import *
 distance_csv = '/Users/adamisom/Desktop/WGUPS Distance Table.csv'
 package_csv = '/Users/adamisom/Desktop/WGUPS Package File.csv'
 
-distances, Locations, packages = load_data(distance_csv, package_csv)
-known_destination_correction_times = [Time_Custom(10, 20, 00)]
-truck_one, truck_two = Truck(), Truck()
-trucks = [truck_one, truck_two]
+
+def all_packages_delivered(packages):
+    '''Return whether all packages are delivered.
+
+    TODO: test this'''
+    return all([pkg.props['state'].name == 'DELIVERED'
+                for pkg in packages])
 
 
-def all_packages_delivered():
-    '''Return whether all packages are delivered. UNTESTED.'''
-    return True
-    # return all([pkg.status == PkgState['DELIVERED']
-    #             for pkg in packages)])
-
-
-def last_arrival_time():
+def last_arrival_time(packages):
     '''Return the time by which all packages will have arrived at the hub.'''
-    return None
-    # return max([pkg.special_note['late_arrival']
-    #             for pkg in all_packages
-    #             if pkg.special_note['late_arrival'] is not None])
+    return max([pkg.props['special_note']['late_arrival']
+                for pkg in packages
+                if pkg.props['special_note']['late_arrival'] is not None])
 
 
-def last_correction_time():
+def last_correction_time(packages):
     '''Return the time by which all destination corrections will be known.'''
+    if any([pkg.props['special_note']['wrong_destination']
+            for pkg in packages]):
+        return max(known_destination_correction_times)
     return None
-    # if any([pkg.special_note['wrong_destination']
-    #         for pkg in all_packages]):
-    #     return max(known_destination_correction_times)
-    # return None
 
-number_of_loops = 0
-while not all_packages_delivered() and number_of_loops < 100:
-    number_of_loops += 1
 
-    for truck in trucks:
-        pass
-        # if truck.location == Locations['Hub']:
-        #     last_arrival_time = last_arrival_time()
-        #     last_correction_time = last_correction_time()
+def run_program():
+    distances, Locations, packages = load_data(distance_csv, package_csv)
+    known_destination_correction_times = [Time_Custom(10, 20, 00)]
+    truck_one, truck_two = Truck(), Truck()
+    trucks = [truck_one, truck_two]
 
-        # pkgs_at_hub = truck.discover_packages_at_hub(la, lc, packages)
-        # pkg_load = algorithms.pick_load(pkgs_at_hub, distances)
-        # truck.load(pkg_load)
-        # route = algorithms.build_route(pkg_load, distances)
-        # truck.deliver(route)
+    number_of_loops = 0
+    while not all_packages_delivered(packages) and number_of_loops < 100:
+        number_of_loops += 1
 
-snapshot(Time_Custom(9, 00, 00), packages)
-# snapshot(Time_Custom(10, 00, 00), packages)
-# snapshot(Time_Custom(13, 00, 00), packages)
+        for truck in trucks:
+            pass
+            # if truck.location == Locations['Hub']:
+            #     last_arrival_time = last_arrival_time()
+            #     last_correction_time = last_correction_time()
 
-# handle_input(packages)
+            # pkgs_at_hub = truck.discover_packages_at_hub(la, lc, packages)
+            # pkg_load = algorithms.pick_load(pkgs_at_hub, distances)
+            # truck.load(pkg_load)
+            # route = algorithms.build_route(pkg_load, distances)
+            # truck.deliver(route)
+
+    snapshot(Time_Custom(9, 00, 00), packages)
+    # snapshot(Time_Custom(10, 00, 00), packages)
+    # snapshot(Time_Custom(13, 00, 00), packages)
+
+    # handle_input(packages)
+
+if __name__ == '__main__':
+    run_program()

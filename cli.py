@@ -278,6 +278,9 @@ def get_destination_corrections_from_user(Locations):
     Destination_Corrections.append(
         Destination_Correction(9, Time_Custom(10, 20, 00), None))
 
+    # temporary return
+    return Destination_Corrections
+
     user_has_information = ask_user_if_they_have_correction_information()
     if not user_has_information:
         return Destination_Corrections

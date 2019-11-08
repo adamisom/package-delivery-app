@@ -15,18 +15,36 @@ def all_packages_delivered(packages):
                 for pkg in packages])
 
 
+def display_distances(distances):
+    '''Print distance 2D-list as a readable table.
+
+    For development use only'''
+    string = ''
+    for row in distances:
+        string += '\n'
+        for item in row:
+            string += str(item).rjust(5, ' ')
+    string = string.replace('DISTANCE BETWEEN HUBS IN MILES', '    ')
+    string = 'DISTANCES' + string
+    print(string)
+
+
 def run_program(distance_csv, package_csv):
     say_hello()
 
     distances, Locations, packages = load_data(distance_csv, package_csv)
 
+    display_distances(distances)  # for development only
+
     Destination_Corrections = get_destination_corrections_from_user(Locations)
 
-    truck_one, truck_two = Truck(), Truck()
-    trucks = [truck_one, truck_two]
+    truck_one = Truck()
+    trucks = [truck_one]
+    # truck_one, truck_two = Truck(), Truck()
+    # trucks = [truck_one, truck_two]
 
     number_of_loops = 0
-    while not all_packages_delivered(packages) and number_of_loops < 3:
+    while not all_packages_delivered(packages) and number_of_loops < 1:
         number_of_loops += 1
 
         for truck in trucks:  # um, right now this calls contents 2x per loop
@@ -35,7 +53,7 @@ def run_program(distance_csv, package_csv):
                     packages, Destination_Corrections)
                 pkg_load = pick_load(pkgs_at_hub, distances)
                 truck.load(pkg_load)
-                route = build_route(pkg_load, distances)
+                route = build_route(pkg_load, distances, Locations)
                 truck.deliver(route)
 
     # make_snapshot(Time_Custom(9, 00, 00), packages)

@@ -1,10 +1,9 @@
----DOING NOW:
-Do: 1. cli - flesh out get_ (and helper(s)), 25m
-	2. basic truck load, 5m
-	3. basic truck deliver, 15m
+----THOUGHTS
+I may need to make a truck class function to return max_packages - algo load may need it
 
-Now: 2:30pm, starting #1, hope to finish 2:55pm.
-Note: 
+
+---DOING NOW:
+
 
 ----TODO BEFORE FINISHING:
 Test out all the docstrings!

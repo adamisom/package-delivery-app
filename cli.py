@@ -145,24 +145,29 @@ def give_user_correction_instructions():
           'the package csv file had for that package.\n')
 
 
-def validate_destination_correction_information(input_string):
-    return 'x' in input_string
+def validate_user_correction_information(input_string, Locations):
+    user_input = input_string.split(',')
+    if len(user_input) != 2:
+        return False
+
+    package_id, time_or_location = user_input
+    package_id = package_id.strip()
+    time_or_location = time_or_location.strip()
+
+    one_digit_hour = re.search('\d{1}:\d{2}', time_or_location, re.IGNORECASE)
+    two_digit_hour = re.search('\d{2}:\d{2}', time_or_location, re.IGNORECASE)
+
+    landmarks = [loc.landmark for loc in Locations]
+    street_addresses = [loc.address for loc in Locations]
+
+    return (user_input[0].isdigit() and   # first part an integer
+            (one_digit_hour or two_digit_hour or  # second part a time
+             time_or_location in landmarks or     # or a location
+             time_or_location in street_adresses))
 
 
-def get_valid_correction_item():
+def get_valid_correction_item_or_quit(Locations):
     '''.'''
-
-
-def get_package_id_from_string(input_string):
-    '''.'''
-
-
-def get_time_or_location_from_string(input_string):
-    '''.'''
-
-
-def get_one_destination_correction(Locations):
-    '''FILL ME IN.'''
     prompt = ('\nPlease enter the destination-correction information '
               'on the next line, then hit the Enter key:\n')
     sorry = ('\nSorry, that doesn\'t look like valid correction information '
@@ -170,14 +175,75 @@ def get_one_destination_correction(Locations):
              'type "q" or "quit" to exit.\nOtherwise, please try again.')
 
     user_input = input(prompt)
-    while not validate_destination_correction_information(user_input):
+    while not validate_user_correction_information(user_input, Locations):
         print(sorry)
         user_input = input(prompt)
         if user_input.lower().strip() in ('q', 'quit', 'quit()'):
             return 'quit'
 
-    # get_valid_correction_item() should replace the above prompt/while
     return user_input
+
+
+def get_package_id_from_string(package_id_string):
+    '''Validate and return package ID from string.
+
+    This function assumes that the company's package ID numbers
+    will always be less than 1000. This assumption is shared by a
+    Package class method (validate_package_ID_list method).
+    '''
+    ID = int(package_id_string.strip())
+    assert(ID > 0 and ID < 1000)
+    return ID
+
+
+def get_time_or_location_from_string(time_or_location, Locations):
+    '''.'''
+    time_or_location = time_or_location.strip()
+    one_digit_hour = re.search('\d{1}:\d{2}', time_or_location, re.IGNORECASE)
+    two_digit_hour = re.search('\d{2}:\d{2}', time_or_location, re.IGNORECASE)
+
+    if one_digit_hour or two_digit_hour:
+        if one_digit_hour:
+            hour = int(one_digit_hour.group(0)[0:1])
+            minute = int(one_digit_hour.group(0)[2:4])
+            return Time_Custom(hour, minute, 0)
+        elif two_digit_hour:
+            hour = int(two_digit_hour.group(0)[0:2])
+            minute = int(two_digit_hour.group(0)[3:5])
+            return Time_Custom(hour, minute, 0)
+
+    landmarks = [loc.landmark for loc in Locations]
+    if time_or_location in landmarks:
+        index_of_match = landmarks.index(time_or_location)
+        # this trick works because list comprehensions retain order
+        return Locations[index_of_match]
+
+    street_addresses = [loc.address for loc in Locations]
+    if time_or_location in street_adresses:
+        index_of_match = street_addresses.index(time_or_location)
+        # this trick works because list comprehensions retain order
+        return Locations[index_of_match]
+
+
+def get_one_destination_correction(Locations):
+    '''FILL ME IN.'''
+    item_or_quit = get_valid_correction_item_or_quit(Locations)
+    if item_or_quit == 'quit':
+        return 'quit'
+
+    correction_item_list = [None] * 3
+
+    user_input = input_string.split(',')
+    package_id = get_package_id_from_string(package_id_string)
+    orrection_item_list[0] = package_id
+    time_or_location = get_time_or_location_from_string(
+        time_or_location, Locations)
+    if isinstance(time_or_location, Time_Custom):
+        correction_item_list[1] = time_or_location  # time
+    else:
+        correction_item_list[2] = time_or_location  # location
+
+    return correction_item_list
 
 
 def get_destination_corrections_from_user(Locations):
@@ -208,6 +274,7 @@ def get_destination_corrections_from_user(Locations):
     Destination_Correction = namedtuple('Destination_Correction',
                                         ['id', 'time', 'location'])
 
+    # NOTE the below line is a manual add (I am not a fan!)
     Destination_Corrections.append(
         Destination_Correction(9, Time_Custom(10, 20, 00), None))
 
@@ -218,7 +285,6 @@ def get_destination_corrections_from_user(Locations):
     give_user_correction_instructions()
 
     while user_has_information:
-
         # THE LINE BELOW IS WHERE I NEED MORE WORK
         parsed_input = get_one_destination_correction(Locations)
         print(f'\nparsed input: {parsed_input}\n')

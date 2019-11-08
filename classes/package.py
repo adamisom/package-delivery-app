@@ -231,7 +231,8 @@ def validate_package_ID_list(integers_found):
     '''Validate co-delivery package IDs found in package special note.
 
     This function assumes that the company's package ID numbers
-    will always be less than 1000.
+    will always be less than 1000. This assumption is shared by a
+    cli module function (get_package_id_from_string).
     '''
     return all([i > 0 and i < 1000 for i in integers_found])
 

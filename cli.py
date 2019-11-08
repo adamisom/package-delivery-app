@@ -103,8 +103,85 @@ def make_snapshot(time_custom, packages):
         package_snapshot(package, time_custom)
 
 
+def ask_user_if_they_have_correction_information():
+    '''FILL ME IN.'''
+    print('If you know of a package with the wrong destination, you are in '
+          'the right place. If you don\'t have this information right now, '
+          'no problem--just type "q" or "quit" and hit Enter.\nIf you do, '
+          'have information, type any other key--like the Enter key.')
+    ask_user = input('')
+    return ask_user.lower().strip() not in ('q', 'quit')
+
+
+def give_user_correction_instructions():
+    '''FILL ME IN.'''
+    print('\tIf you just want to update a package\'s destination '
+          'right away,\nfirst type the package ID, then comma and '
+          'space, then either the landmark\nor street address.'
+          '\n\tIf you are entering information about a destination '
+          'correction that\nwill be known later, enter it in this '
+          'format: first the package ID, and then\nthe time by which '
+          'the true destination will be known.'
+          '\n\tIf you are updating an existing correction item, '
+          'enter it in this \nformat: first the package ID, and then '
+          'either the landmark or the street\naddress (yes, this is '
+          'the same as in the first case).'
+          '\n\n\tHere are some examples of input that will be accepted:'
+          '\n3, 09:30\t\t<= this says that package with ID 3 has the wrong '
+          '\n\t\t\tdestination location, but it will be corrected'
+          '\n\t\t\tby 9:30am today'
+          '\n5, 13:30\t\t<= similarly, this says package 5 will'
+          '\n\t\t\thave the correct destination by 1:30pm today'
+          '\n6, Sugar House Park\t<= this says that package ID 6 needs to go '
+          'to\n\t\t\tSugar House Park instead of whatever the previous '
+          '\n\t\t\tdestination was'
+          '\n\n\tA couple of things worth keeping in mind:'
+          '\n1. If you enter a time, it must be in this format'
+          '\n\th:mm or hh:mm\n\tExamples: 3:55, 12:30, 14:00'
+          '\n2. If you enter a time, it must be "military time".'
+          '\n3. That means "AM" and "PM" are ignored.'
+          '\n4. If you enter a location, then whether that is a '
+          'landmark or street address, it must match exactly what '
+          'the package csv file had for that package.\n')
+
+
+def validate_destination_correction_information(input_string):
+    return 'x' in input_string
+
+
+def get_valid_correction_item():
+    '''.'''
+
+
+def get_package_id_from_string(input_string):
+    '''.'''
+
+
+def get_time_or_location_from_string(input_string):
+    '''.'''
+
+
+def get_one_destination_correction(Locations):
+    '''FILL ME IN.'''
+    prompt = ('\nPlease enter the destination-correction information '
+              'on the next line, then hit the Enter key:\n')
+    sorry = ('\nSorry, that doesn\'t look like valid correction information '
+             'to me.\nIf you don\'t want to enter information after all, '
+             'type "q" or "quit" to exit.\nOtherwise, please try again.')
+
+    user_input = input(prompt)
+    while not validate_destination_correction_information(user_input):
+        print(sorry)
+        user_input = input(prompt)
+        if user_input.lower().strip() in ('q', 'quit', 'quit()'):
+            return 'quit'
+
+    # get_valid_correction_item() should replace the above prompt/while
+    return user_input
+
+
 def get_destination_corrections_from_user(Locations):
-    '''Purpose of function goes here.
+    '''FILL ME IN.
 
     Data definition:
     A Destination_Correction is a namedtuple of
@@ -120,7 +197,6 @@ def get_destination_corrections_from_user(Locations):
     us so), but when they need some time to find out the right address or
     otherwise get it to us. It also lets us handle when we know we got it
     wrong but know that we'll have the right information later.
-
         Usage: the list of destination corrections returned by this function is
     intended to be checked by truck drivers at the hub. If the time listed for
     a correction has passed, the truck is responsible for updating the package.
@@ -131,5 +207,27 @@ def get_destination_corrections_from_user(Locations):
 
     Destination_Correction = namedtuple('Destination_Correction',
                                         ['id', 'time', 'location'])
+
+    Destination_Corrections.append(
+        Destination_Correction(9, Time_Custom(10, 20, 00), None))
+
+    user_has_information = ask_user_if_they_have_correction_information()
+    if not user_has_information:
+        return Destination_Corrections
+
+    give_user_correction_instructions()
+
+    while user_has_information:
+
+        # THE LINE BELOW IS WHERE I NEED MORE WORK
+        parsed_input = get_one_destination_correction(Locations)
+        print(f'\nparsed input: {parsed_input}\n')
+
+        if parsed_input == 'quit':
+            return Destination_Corrections
+
+        ask_for_more = input('Would you like to add another correction? Type '
+                             '"y" or "yes" if so.\nOtherwise, hit Enter.\n')
+        user_has_information = ask_for_more.lower().strip() in ('y', 'yes')
 
     return Destination_Corrections

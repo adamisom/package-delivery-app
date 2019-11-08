@@ -38,7 +38,7 @@ def run_program(distance_csv, package_csv):
                 route = build_route(pkg_load, distances)
                 truck.deliver(route)
 
-    make_snapshot(Time_Custom(9, 00, 00), packages)
+    # make_snapshot(Time_Custom(9, 00, 00), packages)
     # make_snapshot(Time_Custom(10, 00, 00), packages)
     # make_snapshot(Time_Custom(13, 00, 00), packages)
 

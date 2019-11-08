@@ -1,6 +1,15 @@
----Reflections on TODOs and why I'm not doing them now.
+---DOING NOW:
+Do: 1. cli - flesh out get_ (and helper(s)), 25m
+	2. basic truck load, 5m
+	3. basic truck deliver, 15m
 
-1. ...
+Now: 2:30pm, starting #1, hope to finish 2:55pm.
+Note: 
+
+----TODO BEFORE FINISHING:
+Test out all the docstrings!
+Specifically, find out if I need to insert spaces at the beginning of 
+every multi-line comment/docstring after the first line.
 
 ----GOOD PLANNING - notes from How to Design Programs / HtDP
 TIPS

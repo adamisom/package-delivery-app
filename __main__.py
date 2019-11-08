@@ -1,11 +1,12 @@
-from .algorithms import *
-from .cli import snapshot, handle_input, get_destination_corrections_from_user
+from .algorithms import pick_load, build_route
+from .cli import (say_hello, make_snapshot, handle_snapshot_request,
+                  get_destination_corrections_from_user)
 from .load import load_data
 from .classes.time_custom import Time_Custom
 from .classes.hash import Hash
 from .classes.package import Package
 from .classes.truck import Truck
-from .tests.general_tests import *
+from .tests.general import test
 
 
 def all_packages_delivered(packages):
@@ -15,6 +16,8 @@ def all_packages_delivered(packages):
 
 
 def run_program(distance_csv, package_csv):
+    say_hello()
+
     distances, Locations, packages = load_data(distance_csv, package_csv)
 
     Destination_Corrections = get_destination_corrections_from_user(Locations)
@@ -35,12 +38,13 @@ def run_program(distance_csv, package_csv):
                 route = build_route(pkg_load, distances)
                 truck.deliver(route)
 
-    snapshot(Time_Custom(9, 00, 00), packages)
-    # snapshot(Time_Custom(10, 00, 00), packages)
-    # snapshot(Time_Custom(13, 00, 00), packages)
+    make_snapshot(Time_Custom(9, 00, 00), packages)
+    # make_snapshot(Time_Custom(10, 00, 00), packages)
+    # make_snapshot(Time_Custom(13, 00, 00), packages)
 
-    # handle_input(packages)
+    # handle_snapshot_request(packages)
 
+    test()
 
 if __name__ == '__main__':
     run_program('/Users/adamisom/Desktop/WGUPS Distance Table.csv',

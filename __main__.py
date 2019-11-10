@@ -34,7 +34,7 @@ def run_program(distance_csv, package_csv):
 
     distances, Locations, packages = load_data(distance_csv, package_csv)
 
-    display_distances(distances)  # for development only
+    # display_distances(distances)  # for development only
 
     Destination_Corrections = get_destination_corrections_from_user(Locations)
 
@@ -42,6 +42,7 @@ def run_program(distance_csv, package_csv):
     trucks = [truck_one]
     # truck_one, truck_two = Truck(), Truck()
     # trucks = [truck_one, truck_two]
+    initial_leave = Time_Custom(8, 00, 00)  # trucks first leave hub at 8 AM
 
     number_of_loops = 0
     while not all_packages_delivered(packages) and number_of_loops < 1:
@@ -53,7 +54,8 @@ def run_program(distance_csv, package_csv):
                     packages, Destination_Corrections)
                 pkg_load = pick_load(pkgs_at_hub, distances)
                 truck.load(pkg_load)
-                route = build_route(pkg_load, distances, Locations)
+                route = build_route(pkg_load, distances, Locations,
+                                    Truck.speed_function, initial_leave)
                 truck.deliver(route)
 
     # make_snapshot(Time_Custom(9, 00, 00), packages)
@@ -62,7 +64,7 @@ def run_program(distance_csv, package_csv):
 
     # handle_snapshot_request(packages)
 
-    test()
+    # test()
 
 if __name__ == '__main__':
     run_program('/Users/adamisom/Desktop/WGUPS Distance Table.csv',

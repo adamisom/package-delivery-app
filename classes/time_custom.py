@@ -14,7 +14,7 @@ class Time_Custom:
         self.minute = minute
         self.second = second
 
-    def advance_clock(self, minutes):
+    def add_time(self, minutes):
         '''Advance the "clock" of a Time_Custom object by adding minutes.
 
         Input is restricted to a (positive number of) minutes.
@@ -50,6 +50,11 @@ class Time_Custom:
         '''Adjust any number of minutes > 60 by rolling over into hours.'''
         minutes_overflow = int((s - (s % 60)) / 60)
         return m + minutes_overflow, s - 60 * minutes_overflow
+
+    @classmethod
+    def clone(cls, time_obj):
+        '''Return a clone of a time-object.'''
+        return Time_Custom(time_obj.hour, time_obj.minute, time_obj.second)
 
     def __str__(self):
         '''Return string representation of a Time_Custom object.'''

@@ -74,20 +74,11 @@ class Truck():
     def deliver(self, route):
         '''Deliver packages on truck.
 
-        Data definition: A 'Stop' on a 'Route' is a list, containing:
-            - location*
-            - packages: list of packages to drop off at this location
-            - distance_?
-            - projected_arrival? (time_custom)
-        A Route is then simply a list of Stops.
-
-        *A Location is a namedtuple of num, landmark, address.
-
         What it should do:
         - update EACH package's state and history properties
         - update truck's packages and location properties
         '''
-        pass
+        print(f'in truck.deliver, route is: {route}')
 
     def __str__(self):
         '''Return string representation of Truck object.'''

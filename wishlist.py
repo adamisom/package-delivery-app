@@ -1,67 +1,61 @@
 # per notes.txt, each item has:
 # meaningful name - signature - purpose stmt
 
-''' Algorithm module: 7 functions, 4 for load 3 for deliver, like this:
-(load)
-pick_load
-    calls nearest_neighbor_route
-        calls get_nearest_neighbor
-            calls update_nn_distances
 
-(deliver)
-build_route
-    calls dijkstras_route
-    loops per stop, and calls build_stop
-'''
+# build_route needs to...
+destination_numbers = get_location_nums(pkg_load)
+nearest_neighbor = get_nearest_neighbor(
+    location, destination_numbers, distances)
+location_num, distance_from_previous = nearest_neighbor
+destination_numbers.remove(location_num)
 
 
-def update_nn_distances(location, pkg_load_distances):
-    '''Update the 2D list of distances used by nearest_neighbors_route to mark
-    one location as already picked (so it isn't picked again).'''
-    pass  # no return
+# TEMP:
+def get_nearest_neighbor2(starting_from, destination_numbers, distances):
+    '''.'''
+    row_index = [row[0] for row in distances].index(starting_from)
+    distances_from_start = distances[row_index]
 
+    transposed = list(zip(distances[0], distances_from_start))
 
-def get_nearest_neighbor(location, pkg_load_distances):
-    '''Return the location nearest to a provided location.'''
-    location_num = 1  # the hub: a dummy value for now
-    return location_num
+    eligible_neighbors = [location_distance for location_distance in transposed
+                          if location_distance[0] in destination_numbers and
+                          location_distance[1] > 0]
 
+    print(f'\ninside nn2, starting_from is {starting_from}, '
+          f'destination-#s is {destination_numbers}, distances is '
+          f'(NVM-TOO LONG) and eligible neighbors is: {eligible_neighbors}')
+    try:
+        nearest = min(eligible_neighbors, key=lambda neighbor: neighbor[1])
+    except ValueError:
+        nearest = None
 
-def nearest_neighbors_route(pkg_load, pkg_load_distances):
-    '''Return total distance traveled in a simulated route in which the route
-    is built up from greedy nearest-neighbor selection.'''
-    distance_traveled = 0s
-    return distance_traveled
+    return nearest
 
-
-def pick_load(pkgs_at_hub, distances):
-    '''Return list of package IDs that performed the best from a simulation of
-    many package selections and deliveries.'''
-    pkg_load = random.sample(pkgs_at_hub, 16)  # if <16 at hub, program crashes
+# INSIDE BUILD_ROUTE:
+# this call is problematic rn
+# well no shit. it's two different concerns
+# # of packages is not equal to # of drop-off locations
+# but get_nearest_neighbor requires... oh god.
+# ... I could...
+# - test if pkg location is the same
+# - if it is not, then call nn, up thru packages_for_stop
+nearest_neighbor = get_nearest_neighbor2(
+    location_num, destination_numbers, distances)
+if nearest_neighbor is None:
     return
 
+location_num, distance_from_previous = nearest_neighbor
+destination_numbers.remove(location_num)
 
-def dijkstras_route(pkg_load, distances):
-    ''''Return an optimal delivery route (a simple ordered list of package IDs_
-    using Dijkstra's algorithm.'''
-    route_order = []
-    return route_order
+packages_for_stop = get_stop_packages(location_num, pkg_load)
 
-
-def build_stop(location, distances):
-    '''Return a Stop on a route.
-
-    A Stop has these attributes:
-        -
-        -
-        -
-        -
-    '''
-    stop = []
-    return stop
-
-
-def build_route(pkg_load, distances):
-    '''Return delivery route (list of stops) for a provided package-load.'''
-    route = []
-    return route
+# Hmm--this SHOULD throw an error, since I define stop
+# but also pass it in as last param to get_stop_projected_arrival
+stop = Stop(location_num,
+            packages_for_stop,
+            distance_from_previous,
+            (initial_leave if len(route) == 0
+             else get_stop_projected_arrival(
+                truck_speed, distance_from_previous,
+                route[-1], stop)))  # -1: prev stop

@@ -96,9 +96,9 @@ def pick_load(pkgs_at_hub, distances):
     return simulated_load_package_IDs[index_of_min_distance]
 
 
-def get_stop_projected_arrival(speed_function, dist_from_prev, stop_A, stop_B):
+def get_projected_arrival(speed_function, dist_from_prev, stop_A, location_B):
     '''Return projected arrival time for a stop on a route.'''
-    avg_speed = speed_function(stop_A.location, stop_B.location)
+    avg_speed = speed_function(stop_A.location, location_B)
     minutes = 60 * (dist_from_prev / avg_speed)
     projected_arrival = Time_Custom.clone(stop_A.projected_arrival)
     projected_arrival.add_time(minutes)
@@ -135,15 +135,38 @@ def build_route(pkg_load, distances, Locations, truck_speed, initial_leave):
 
     location_num = 1  # routes start at the hub (location #1)
 
-    for pkg in pkg_load:
+    while len(destination_numbers) > 0:
+        nearest_neighbor = get_nearest_neighbor(
+            location_num, destination_numbers, distances)
 
-        # dummy values
-        distance_from_previous = 5
-        packages_at_stop = []
-        projected_arrival = Time_Custom(12, 00, 00)
+        location_num, distance_from_previous = nearest_neighbor
 
-        stop = Stop(location_num, packages_at_stop,
-                    distance_from_previous, projected_arrival)
+        destination_numbers.remove(location_num)
 
+        packages_for_stop = get_stop_packages(location_num, pkg_load)
+
+        if len(route) == 0:
+            previous_stop = None
+            projected_arrival = initial_leave
+        else:
+            previous_stop = route[-1]
+            projected_arrival = get_projected_arrival(
+                truck_speed, distance_from_previous,
+                previous_stop, location_num)
+
+        stop = Stop(location_num,
+                    packages_for_stop,
+                    distance_from_previous,
+                    projected_arrival)
         route.append(stop)
+
+    # add final stop--go back to the hub (location #1)
+    distance_from_previous = distances[location_num][1]
+    projected_arrival = get_projected_arrival(
+        truck_speed, distance_from_previous, previous_stop, 1)
+    route.append(Stop(1,
+                      [],
+                      distance_from_previous,
+                      projected_arrival))
+
     return route

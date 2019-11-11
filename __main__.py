@@ -1,3 +1,4 @@
+# Adam Isom, Student ID #000906109
 from .algorithms import pick_load, build_route
 from .cli import (say_hello, make_snapshot, handle_snapshot_request,
                   get_destination_corrections_from_user)
@@ -18,7 +19,7 @@ def all_packages_delivered(packages):
 def display_distances(distances):
     '''Print distance 2D-list as a readable table.
 
-    For development use only'''
+    For development use only (take out before promoting to production).'''
     string = ''
     for row in distances:
         string += '\n'
@@ -64,7 +65,11 @@ def run_program(distance_csv, package_csv):
 
     # handle_snapshot_request(packages)
 
-    # test()
+    # test()  # take out this line before promoting to production
+
+    # TODO: from Rubric: "The verification includes the total miles added to
+    # all trucks, and it states that all packages were delivered on time."
+
 
 if __name__ == '__main__':
     run_program('/Users/adamisom/Desktop/WGUPS Distance Table.csv',

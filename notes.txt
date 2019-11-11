@@ -1,14 +1,10 @@
 ----THOUGHTS
-I may need to make a truck class function to return max_packages - algo load may need it
-
-
----DOING NOW:
-
+  If I need to/could describe 'destinations corrections' in my write-up...
+"Destination corrections are received from the user of a program. This is necessary because currently neither corrected destinations nor the time by which a corrected destination will be known is part of the ‘package’ csv input file. Functionality in the cli module gathers all known destination-corrections and updates the relevant packages."
 
 ----TODO BEFORE FINISHING:
-Test out all the docstrings!
-Specifically, find out if I need to insert spaces at the beginning of 
-every multi-line comment/docstring after the first line.
+- Write and run more tests
+- Test out all the docstrings! Specifically, find out if I need to insert spaces at the beginning of very multi-line comment/docstring after the first line.
 
 ----GOOD PLANNING - notes from How to Design Programs / HtDP
 TIPS

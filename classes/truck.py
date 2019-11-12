@@ -64,27 +64,49 @@ class Truck():
                 if pkg.props['state'].name == 'AT_HUB']
 
     def load(self, pkg_load):
-        '''Load truck with packages.
-
-        What it should do:
-        - change truck's packages property
-        '''
+        '''Load truck with packages.'''
         self.packages = pkg_load
 
     def deliver(self, route):
         '''Deliver packages on truck.
 
+        Note: this whole program implicitly assumes that trucks are able to
+        deliver each package precisely on schedule.
+
         What it should do:
         - update EACH package's state and history properties
         - update truck's packages and location properties
+
+        Data definition (see algorithms.py for more):
+        A 'Stop' on a 'Route' is a namedtuple, comprising:
+            - location: location of the stop
+            - packages: list of packages to drop off at this location
+            - distance_from_prev: distance from previous stop
+            - projected_arrival: a Time_Custom object
         '''
-        print(f'in truck.deliver, route is: {route}')
+        # TEMPORARY--this is helpful, put in test?
+        pretty_route = '\n\t'.join([str(stop) for stop in route])
+        print(f'\nin truck.deliver, route is: {pretty_route}')
+
+        # TODO: UPDATE TRUCK/SELF MILEAGE ( += stop.distance_from_prev )
+        # after defining a mileage property for trucks
+
+        for stop in route:
+            self.props['location'] = stop.location
+            self.props['time'] = stop.projected_arrival
+            self.props['packages'] = list(
+                set(self.props['packages']) - set(stop.packages))
+
+            for pkg in stop.packages:
+                pkg.set_state('DELIVERED')
+                pkg.add_to_history('DELIVERED', self.props['time'])
 
     def __str__(self):
         '''Return string representation of Truck object.'''
-        package_list = '\n\t'.join([str(pkg) for pkg in self.packages])
-        return f'Truck with ID: {self.ID}, is at location {self.location}, '\
-               f'at {str(self.time)}, with these packages: \n\t{package_list}'
+        package_list = '\n\t'.join([str(pk) for pk in self.props['packages']])
+        return (f"Truck with ID: {self.props['ID']}; location: "
+                f"{self.props['location']}; time: {str(self.props['time'])};"
+                f" with these packages: \n\t{package_list}")
 
     @classmethod
     def speed_function(cls, location1, location2):

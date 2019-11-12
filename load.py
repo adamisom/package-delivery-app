@@ -1,6 +1,16 @@
 import csv
+import re
 from collections import namedtuple
 from .classes.package import Package
+from .classes.time_custom import Time_Custom
+
+
+class DistanceCsv_ValueError(BaseException):
+    pass
+
+
+class PackageCsv_ValueError(BaseException):
+    pass
 
 
 def read_distance_csv(csv_file):
@@ -174,21 +184,40 @@ def validate_package_address_data(package_data, location_namedtuples):
     return True
 
 
-def get_package_destination(pkg_row, location_namedtuples):
+def get_one_package_destination(pkg_row, location_namedtuples):
     '''Return the location named-tuple matching a package's destination.'''
     package_address = f'{pkg_row[1]} {pkg_row[4]}'  # street address plus zip
     location_addresses = [loc[2] for loc in location_namedtuples]
     return location_namedtuples[location_addresses.index(package_address)]
 
 
+def validate_package_deadline_times(package_data):
+    '''Validate that all package deadlines can be converted to Time_Custom.'''
+    for row in package_data:
+        deadline = row[5]
+        if deadline is None:
+            continue
+
+        if not Time_Custom.is_valid_AM_PM_time(deadline):
+            return False
+
+    return True
+
+
 def populate_packages(package_data, location_namedtuples):
     '''Return list of Package objects based on package data from the csv.'''
     all_packages = []
     for package_row in package_data:
-        destination = get_package_destination(package_row,
-                                              location_namedtuples)
-        # create new package object and add to list
-        new_package = Package(*package_row[5:], destination)
+        destination = get_one_package_destination(package_row,
+                                                  location_namedtuples)
+        deadline = package_row[5]
+        if deadline is not None:
+            deadline = Time_Custom.make_time_from_string(package_row[5])
+
+            print(f'\n\tDEADLINE IS!\t{deadline}')
+
+        data_to_use = [package_row[0], deadline] + package_row[6:8]
+        new_package = Package(*data_to_use, destination)
         all_packages.append(new_package)
     return all_packages
 
@@ -211,12 +240,19 @@ def load_data(distance_csv, package_csv):
     clean_distance_data(distances)
     fill_distance_data(distances)
 
-    assert(validate_distance_data(distances))
+    if not validate_distance_data(distances):
+        raise DistanceCsv_ValueError('One or more distance values are absent '
+                                     'or contradict other values in the file')
 
     package_data = read_package_csv(package_csv)
     clean_package_data(package_data)
 
-    assert(validate_package_address_data(package_data, Locations))
+    if not validate_package_address_data(package_data, Locations):
+        raise PackageCsv_ValueError('One or more package addresses does not '
+                                    'match any location from distances csv')
+    if not validate_package_deadline_times(package_data):
+        raise PackageCsv_ValueError('One or more package deadlines could not '
+                                    'be parsed as a valid AM/PM time')
 
     packages = populate_packages(package_data, Locations)
 

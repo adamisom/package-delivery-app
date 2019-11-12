@@ -1,3 +1,6 @@
+import re
+
+
 class Time_Custom:
     '''Time objects represent a truck's clock. Minutes can be added to them.
 
@@ -7,6 +10,8 @@ class Time_Custom:
         add:    33.5 minutes
         result: Time_Custom(13,48,57)
     '''
+
+    digit_regex = re.compile("(\d{1,2}):(\d{2}) (am|pm)", re.IGNORECASE)
 
     def __init__(self, hour, minute, second):
         '''Create Time_Custom object.'''
@@ -55,6 +60,37 @@ class Time_Custom:
     def clone(cls, time_obj):
         '''Return a clone of a time-object.'''
         return Time_Custom(time_obj.hour, time_obj.minute, time_obj.second)
+
+    @classmethod
+    def is_valid_AM_PM_time(cls, time_string):
+        '''Return whether time_string can be parsed as a valid Time_Custom.'''
+        time_parts = cls.digit_regex.search(time_string)
+
+        if time_parts is None or len(time_parts.groups()) != 3:
+            return False
+
+        hour, minute, am_pm = time_parts.groups()
+        hour, minute = int(hour), int(minute)
+
+        if not ((hour >= 0 and hour <= 12) and
+                (minute >= 0 and minute < 60) and
+                not (hour == 0 and am_pm in ('pm', 'PM'))):
+            return False
+
+        return True
+
+    @classmethod
+    def make_time_from_string(cls, time_string):
+        '''Make Time_Custom object from string.'''
+        time_parts = cls.digit_regex.search(time_string)
+        hour, minute, am_pm = time_parts.groups()
+        hour, minute = int(hour), int(minute)
+
+        if am_pm == 'pm':
+            hour += 12
+
+        deadline_tuple = (hour, minute, 0)
+        return Time_Custom(*deadline_tuple)
 
     def __str__(self):
         '''Return string representation of a Time_Custom object.'''

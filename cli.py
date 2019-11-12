@@ -192,7 +192,12 @@ def get_package_id_from_string(package_id_string):
     Package class method (validate_package_ID_list method).
     '''
     ID = int(package_id_string.strip())
-    assert(ID > 0 and ID < 1000)
+
+    if not ID > 0:
+        raise ValueError('Package ID found in special note too small')
+    if not ID < 1000:
+        raise ValueError('Package ID found in special note too large')
+
     return ID
 
 

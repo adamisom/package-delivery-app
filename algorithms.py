@@ -4,6 +4,7 @@ from collections import namedtuple
 from .classes.time_custom import Time_Custom
 
 
+# Stop defined and used in build_route
 Stop = namedtuple('Stop', ['location', 'packages',
                            'distance_from_prev', 'projected_arrival'])
 
@@ -68,7 +69,7 @@ def get_location_nums(pkgs):
     return list(set_of_location_nums)
 
 
-def pick_load(pkgs_at_hub, distances):
+def pick_load(pkgs_at_hub, all_packages, distances, is_last, truck_num):
     '''Return list of package IDs that performed the best from a simulation of
     many package selections and deliveries.
 
@@ -81,8 +82,12 @@ def pick_load(pkgs_at_hub, distances):
     simulated_load_distances = []
 
     for i in range(number_of_simulated_loads):
-        # if <16 items at hub, program crashes
+        # if <16 items at hub, program crashes (random.sample) :< need to fix!
+
         hypothetical_package_load = random.sample(pkgs_at_hub, 16)
+        # hypothetical_package_load = make_load_selection(
+        #     pkgs_at_hub, all_packages, 16, is_last, truck_num)
+
         destination_numbers = get_location_nums(hypothetical_package_load)
 
         simulated_load_package_IDs.append(hypothetical_package_load)
@@ -107,8 +112,10 @@ def get_projected_arrival(speed_function, dist_from_prev, stop_A, location_B):
 
 def get_stop_packages(location_num, packages):
     '''Return list of package-IDs to be dropped off at a given location.'''
-    return [pkg.props['ID'] for pkg in packages
+    # TODO: update docstring to lop off "-IDs"
+    return [pkg for pkg in packages
             if pkg.props['location'].num == location_num]
+    # return [pkg.props['ID'] for pkg in packages
 
 
 def compute_route_distance(route):
@@ -119,14 +126,15 @@ def compute_route_distance(route):
 def build_route(pkg_load, distances, Locations, truck_speed, initial_leave):
     '''Return delivery route (list of stops) for a provided package-load.
 
-    Data definition: A 'Stop' on a 'Route' is a list, containing:
+    Data definition:
+    A 'Stop' on a 'Route' is a namedtuple, comprising:
         - location*
-        - packages: list of packages (IDs??) to drop off at this location
-        - distance_?
-        - projected_arrival? (time_custom)
+        - packages: list of packages to drop off at this location
+        - distance_from_prev: distance from previous stop
+        - projected_arrival: a Time_Custom object
     A Route is then simply a list of Stops.
 
-    *A Location is a namedtuple of num, landmark, address.
+    *A Location is itself a namedtuple of num, landmark, address.
 
     This function assumes that routes should start at the hub.
     '''
@@ -145,6 +153,7 @@ def build_route(pkg_load, distances, Locations, truck_speed, initial_leave):
 
         packages_for_stop = get_stop_packages(location_num, pkg_load)
 
+        # previous_stop = None
         if len(route) == 0:
             previous_stop = None
             projected_arrival = initial_leave

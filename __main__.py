@@ -10,6 +10,39 @@ from .classes.truck import Truck
 from .tests.general import test
 
 
+def is_package_delivered_and_on_time(package):
+    '''Return whether the given package was delivered at all if it had no
+    deadline, and whether it was delivered on time if it did have one.'''
+
+    # # These print statements are useful, I may save them in tests
+    # print(f"Package ID: {package.props['ID']}")
+    # print(f"Deadline?\t{package.props['deadline']}")
+    # print(f"Package History:\n{package.display_history()}\n")
+
+    for record in package.props['history']:
+        if (record.state.name == 'DELIVERED' and
+                package.props['deadline'] is None):
+            return True
+
+        if (record.state.name == 'DELIVERED' and
+                record.time <= package.props['deadline']):
+            return True
+
+    return False
+
+
+def display_number_delivered_on_time(packages):
+    '''Calculate and display the number (it should be all of them) of packages
+    that were delivered on time.'''
+    on_time_count = 0
+    for pkg in packages:
+        if is_package_delivered_and_on_time(pkg):
+            on_time_count += 1
+
+    print(f'\n{on_time_count} out of {len(packages)} packages '
+          'were delivered on time.')
+
+
 def all_packages_delivered(packages):
     '''Return whether all packages are delivered.'''
     return all([pkg.props['state'].name == 'DELIVERED'
@@ -35,29 +68,49 @@ def run_program(distance_csv, package_csv):
 
     distances, Locations, packages = load_data(distance_csv, package_csv)
 
-    # display_distances(distances)  # for development only
+    # for development only--save in tests?
+    # display_distances(distances)
 
     Destination_Corrections = get_destination_corrections_from_user(Locations)
 
-    truck_one = Truck()
-    trucks = [truck_one]
-    # truck_one, truck_two = Truck(), Truck()
-    # trucks = [truck_one, truck_two]
+    number_of_trucks = 3
+    number_of_drivers = 2
+    trucks = []
+    for i in range(number_of_trucks):
+        trucks.append(Truck())
+
     initial_leave = Time_Custom(8, 00, 00)  # trucks first leave hub at 8 AM
 
-    number_of_loops = 0
-    while not all_packages_delivered(packages) and number_of_loops < 1:
-        number_of_loops += 1
+    # Initial departure of all trucks, if there's a driver for that truck.
+    # The last truck to leave is responsible for ensuring all packages meet
+    # their deadline. In the future, if one truck isn't enough, the last two
+    # or three could be responsible, or another solution could be found.
+    last_truck_to_leave_in_morning = trucks[number_of_drivers-1]
+    for truck in trucks:
+        pkgs_at_hub = truck.get_deliverable_packages(
+            packages, Destination_Corrections)
 
-        for truck in trucks:  # um, right now this calls contents 2x per loop
-            if truck.props['location'] == 1:
-                pkgs_at_hub = truck.get_deliverable_packages(
-                    packages, Destination_Corrections)
-                pkg_load = pick_load(pkgs_at_hub, distances)
-                truck.load(pkg_load)
-                route = build_route(pkg_load, distances, Locations,
-                                    Truck.speed_function, initial_leave)
-                truck.deliver(route)
+        if truck is last_truck_to_leave_in_morning:
+            pkg_load = pick_load(pkgs_at_hub, packages, distances,
+                                 True, truck.props['ID'])
+        else:
+            pkg_load = pick_load(pkgs_at_hub, packages, distances,
+                                 False, truck.props['ID'])
+        truck.load(pkg_load)
+
+        route = build_route(pkg_load, distances, Locations,
+                            Truck.speed_function, initial_leave)
+        truck.deliver(route)
+
+        if truck is last_truck_to_leave_in_morning:
+            break
+
+    # for development only--save in tests?
+    display_number_delivered_on_time(packages)
+
+    count = 0
+    while not all_packages_delivered(packages) and count < 5:
+        count += 1
 
     # make_snapshot(Time_Custom(9, 00, 00), packages)
     # make_snapshot(Time_Custom(10, 00, 00), packages)

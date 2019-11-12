@@ -5,6 +5,10 @@ from .time_custom import *
 from .hash import *
 
 
+class PackageSpecialNote_ValueError(BaseException):
+    pass
+
+
 class PkgState(Enum):
     '''Enumerate possible package states.'''
     AT_HUB = 1
@@ -15,11 +19,10 @@ class PkgState(Enum):
 
 
 class Package():
-    id_counter = 1
 
     History_Record = namedtuple('History_Record', ['state', 'time'])
 
-    def __init__(self, d, w, sn, location):
+    def __init__(self, pkg_id, d, w, sn, location):
         '''Create Package object.
 
         Data definitions:
@@ -31,12 +34,10 @@ class Package():
             - wrong_destination
         The first two of these sub-properties are used to set initial state.
         '''
-        self.props = Hash(ID=Package.id_counter,
+        self.props = Hash(ID=int(pkg_id),
                           deadline=d,
                           weight=w,
                           location=location)
-
-        Package.id_counter += 1
 
         self.props['special_note'] = Hash('truck_number',
                                           'deliver_with',
@@ -73,6 +74,11 @@ class Package():
         '''Add to history of a package object.'''
         self.props['history'].append(
             Package.History_Record(PkgState(PkgState[state_string]), time))
+
+    def display_history(self):
+        '''Return print-statement-friendly history of package.'''
+        return '\n'.join([' at:\t'.join((record.state.name, str(record.time)))
+                          for record in self.props['history']])
 
     def update_late_as_arrived(self):
         '''Update a late-arriving package to indicate it is now at the hub.'''
@@ -118,12 +124,17 @@ class Package():
             package_list = get_packages_to_deliver_with(special_note)
             return 'deliver_with', package_list
         if late_arrival_constraint:
-            when = Time_Custom(*get_arrival_time(special_note))
+            if not Time_Custom.is_valid_AM_PM_time(special_note):
+                raise PackageSpecialNote_ValueError(
+                    'Time-like value not parseable as an AM/PM time')
+            when = Time_Custom.make_time_from_string(special_note)
             return 'late_arrival', when
         if wrong_destination_constraint:
             return 'wrong_destination', True
 
-        assert (special_note == '')
+        if special_note != '':
+            raise PackageSpecialNote_ValueError(
+                'Special note could not be parsed as a package constraint')
         return None
 
     def mark_package_special(self, parsed_note):
@@ -148,6 +159,8 @@ class Package():
 '''
     The following regex functions are not part of the Package class because
     they do not need to be--they neither consume nor produce Package objects.
+
+    # TODO: compile the 4 regex below. Put the re.compile's on lines 165-8
 '''
 
 
@@ -171,60 +184,25 @@ def destination_regex_match(note):
     return re.search("wrong address", note, re.IGNORECASE)
 
 
-def get_truck_number(note):
-    '''Parse and return truck number from a package special note.'''
-    integers_found = [int(num) for num in filter(str.isdigit, note)]
-    assert(validate_truck_number(integers_found))
-    truck_num = integers_found[0]
-    return truck_num
-
-
-def get_packages_to_deliver_with(note):
-    '''Parse and return list of package IDs from a package special note.'''
-    index_of_first_integer = re.search("\d", note, re.IGNORECASE).start()
-    substring = note[index_of_first_integer:]
-    integers_found = [int(num) for num in substring.split(', ')]
-    if len(integers_found) == 0:  # try split by ',' instead of ', '
-        integers_found = [int(num) for num in substring.split(',')]
-
-    assert(validate_package_ID_list(integers_found))
-
-    package_IDs = integers_found
-    return package_IDs
-
-
-def get_arrival_time(note):
-    '''Parse and return late-arrival time from a package special note.'''
-    one_digit_hour = re.search("\d{1}:\d{2} (am|pm)", note, re.IGNORECASE)
-    two_digit_hour = re.search("\d{2}:\d{2} (am|pm)", note, re.IGNORECASE)
-
-    assert(one_digit_hour or two_digit_hour)
-
-    if one_digit_hour:
-        hour = int(one_digit_hour.group(0)[0:1])
-        minute = int(one_digit_hour.group(0)[2:4])
-        am_pm = one_digit_hour.group(0)[5:7]
-    elif two_digit_hour:
-        hour = int(two_digit_hour.group(0)[0:2])
-        minute = int(two_digit_hour.group(0)[3:5])
-        am_pm = two_digit_hour.group(0)[6:8]
-
-    assert(validate_arrival_time(hour, minute, am_pm))
-
-    if am_pm == 'pm':
-        hour += 12
-
-    arriving_at_tuple = (hour, minute, 0)
-    return arriving_at_tuple
-
-
 def validate_truck_number(integers_found):
     '''Validate truck number found in package special note.
 
     This function assumes that the company's truck-number labels
-    will always be less than 50.
+    will always be less than 100.
     '''
     return len(integers_found) == 1 and integers_found[0] < 100
+
+
+def get_truck_number(note):
+    '''Parse and return truck number from a package special note.'''
+    integers_found = [int(num) for num in filter(str.isdigit, note)]
+    if not validate_truck_number(integers_found):
+        raise PackageSpecialNote_ValueError(
+            'Truck-number error in special note: either more than one '
+            'number was found, or it was too high to be a truck number')
+
+    truck_num = integers_found[0]
+    return truck_num
 
 
 def validate_package_ID_list(integers_found):
@@ -237,14 +215,18 @@ def validate_package_ID_list(integers_found):
     return all([i > 0 and i < 1000 for i in integers_found])
 
 
-def validate_arrival_time(hour, minute, am_pm):
-    '''Validate late-arrival time found in package special note.
+def get_packages_to_deliver_with(note):
+    '''Parse and return list of package IDs from a package special note.'''
+    index_of_first_integer = re.search("\d", note, re.IGNORECASE).start()
+    substring = note[index_of_first_integer:]
+    integers_found = [int(num) for num in substring.split(', ')]
+    if len(integers_found) == 0:  # try split by ',' instead of ', '
+        integers_found = [int(num) for num in substring.split(',')]
 
-    This function assumes the note will not have a military time.
-    That is, hour will be from 0 to 12, and if hour is 0, it will be AM.
+    if not validate_package_ID_list(integers_found):
+        raise PackageSpecialNote_ValueError(
+            'Package-ID error in a deliver-with special note: one or more '
+            'IDs found was either below zero or too high to be a package ID')
 
-    This function makes no assumptions about what hours of the day
-    a truck delivers.
-    '''
-    return ((hour >= 0 and hour <= 12) and (minute >= 0 and minute < 60) and
-            not (hour == 0 and am_pm in ('pm', 'PM')))
+    package_IDs = integers_found
+    return package_IDs

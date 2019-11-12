@@ -10,6 +10,12 @@ from .classes.truck import Truck
 from .tests.general import test
 
 
+def all_packages_delivered(packages):
+    '''Return whether all packages are delivered.'''
+    return all([pkg.props['state'].name == 'DELIVERED'
+                for pkg in packages])
+
+
 def display_distance_traveled(total_distance):
     '''Display distance (in miles) traveled to deliver all packages.'''
     print(f'\nTotal travel distance today was {total_distance:.2f} miles.')
@@ -46,12 +52,6 @@ def display_number_delivered_on_time(packages):
 
     print(f'\n{on_time_count} out of {len(packages)} packages '
           'were delivered on time.')
-
-
-def all_packages_delivered(packages):
-    '''Return whether all packages are delivered.'''
-    return all([pkg.props['state'].name == 'DELIVERED'
-                for pkg in packages])
 
 
 def display_distances(distances):
@@ -95,12 +95,9 @@ def run_program(distance_csv, package_csv):
         pkgs_at_hub = truck.get_deliverable_packages(
             packages, Destination_Corrections)
 
-        if truck is last_truck_to_leave_in_morning:
-            pkg_load = pick_load(pkgs_at_hub, packages, distances,
-                                 True, truck.props['ID'])
-        else:
-            pkg_load = pick_load(pkgs_at_hub, packages, distances,
-                                 False, truck.props['ID'])
+        is_last = True if truck is last_truck_to_leave_in_morning else False
+        truck_num = truck.props['ID']
+        pkg_load = pick_load(pkgs_at_hub, distances, is_last, truck_num)
         truck.load(pkg_load)
 
         route = build_route(pkg_load, distances, Locations,

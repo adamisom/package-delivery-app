@@ -69,24 +69,131 @@ def get_location_nums(pkgs):
     return list(set_of_location_nums)
 
 
-def pick_load(pkgs_at_hub, all_packages, distances, is_last, truck_num):
+def pick_to_meet_deadlines(pkg_load, pkgs_at_hub):
+    '''Return list of packages with a deadline before noon that are still at
+    the hub (not loaded) if this truck is the last one to leave.
+
+    Assumptions (two):
+    - This function assumes that if a deadline is after 12:00 noon there will
+    be plenty of time to deliver it on a truck's second run.
+    - It also...assumes all trucks initially leave the hub at 8:00am.........
+    '''
+    return [pkg for pkg in pkgs_at_hub
+            if pkg.props['deadline'] and
+            pkg.props['deadline'] < Time_Custom(12, 00, 00) and
+            pkg not in pkg_load]
+
+
+def pick_to_satisfy_truck_constraints(pkg_load, pkgs_at_hub, truck_num):
+    '''Return list of packages that need to go on the given truck-number.'''
+    return [pkg for pkg in pkgs_at_hub
+            if pkg.props['special_note']['truck_number'] == truck_num and
+            pkg not in pkg_load]
+
+
+def pick_same_destination_packages(pkg_load, pkgs_at_hub):
+    '''Return list of all packages going to the same destinations as any
+    package in the current package-load.'''
+    set_of_location_nums = get_location_nums(pkg_load)
+    return [pkg for pkg in pkgs_at_hub
+            if pkg.props['location'].num in set_of_location_nums and
+            pkg not in pkg_load]
+
+
+def pick_to_satisfy_deliver_constraints(pkg_load, pkgs_at_hub):
+    '''Return list of packages that must be delivered simultaneously with any
+    packages currently in pkg_load, and in that list, include................
+
+    This function assumes (in the append) that package IDs are unique.
+    '''
+    deliver_with = []
+    for pkg in pkg_load:
+        if pkg.props['special_note']['deliver_with']:
+            for ID in pkg.props['special_note']['deliver_with']:
+                deliver_with.append([pkg for pkg in pkgs_at_hub
+                                    if pkg.props['ID'] == ID])
+
+    return [pkg for pkg in deliver_with if pkg not in pkg_load]
+
+
+def add_up_to_max_load(pkg_load, candidates_to_add, max_load):
+    '''Return list of packages with some to all of candidates_to_add
+    added, up to max_load.
+    TODO: raise error if pkg_load already > 16? '''
+    while (len(pkg_load) <= max_load and
+           len(candidates_to_add) > 0):
+        pkg_load.append(candidates_to_add.pop())
+    return pkg_load
+
+
+def make_load_selection(pkgs_at_hub, max_load, is_last, truck_num):
+    '''Generate one possible selection of packages for loading.'''
+    load = []
+
+    if is_last:
+        candidates = pick_to_meet_deadlines(load, pkgs_at_hub)
+        load = add_up_to_max_load(load, candidates, max_load)
+    if len(load) == max_load:
+        return load
+
+    candidates = pick_to_satisfy_truck_constraints(load, pkgs_at_hub,
+                                                   truck_num)
+    load = add_up_to_max_load(load, candidates, max_load)
+    if len(load) == max_load:
+        return load
+
+    candidates = pick_same_destination_packages(load, pkgs_at_hub)
+    load = add_up_to_max_load(load, candidates, max_load)
+    if len(load) == max_load:
+        return load
+
+    candidates = pick_to_satisfy_deliver_constraints(load, pkgs_at_hub)
+    load = add_up_to_max_load(load, candidates, max_load)
+    if len(load) == max_load:
+        return load
+
+    while len(load) < 16:
+        load.append(None)
+
+        # get nearest-neighbor, but only for locations with any packages
+
+        # call same_dest helper and add to load
+
+        # call deliver_with helper and add to load
+
+    # call helper to drop some(all, droppable) if I have too many
+
+    return random.sample(pkgs_at_hub, max_load)
+
+
+def pick_load(pkgs_at_hub, distances, is_last, truck_num):
     '''Return list of package IDs that performed the best from a simulation of
     many package selections and deliveries.
+
+    TO DO: update this so it no longer does a simulation.
+    It's just not necessary, or helpful.
+    Because make_load_selection will just be totally deterministic (and do NN)
+    I can/should empirically test this by printing all simulated load dists,
+    and if I'm in for a surprise (if they differ), I'll take a closer look!
 
     Inputs:
     - pkgs_at_hub: list of packages (references to Package objects)
     - distances: 2D list. distances[i][j] gives dist between locations i, j
     '''
-    number_of_simulated_loads = 20
+    number_of_simulated_loads = 100
     simulated_load_package_IDs = []
     simulated_load_distances = []
 
     for i in range(number_of_simulated_loads):
-        # if <16 items at hub, program crashes (random.sample) :< need to fix!
 
-        hypothetical_package_load = random.sample(pkgs_at_hub, 16)
-        # hypothetical_package_load = make_load_selection(
-        #     pkgs_at_hub, all_packages, 16, is_last, truck_num)
+        # if <16 items at hub, program crashes (random.sample) :< need to fix!
+        eligible_pkgs = [p for p in pkgs_at_hub
+                         if p.props['special_note']['truck_number'] is None or
+                         p.props['special_note']['truck_number'] == truck_num]
+        hypothetical_package_load = make_load_selection(eligible_pkgs,
+                                                        16,
+                                                        is_last,
+                                                        truck_num)
 
         destination_numbers = get_location_nums(hypothetical_package_load)
 

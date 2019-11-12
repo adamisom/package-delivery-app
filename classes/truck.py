@@ -7,6 +7,7 @@ class Truck():
     id_counter = 1
     max_packages = 16
     average_speed = 18
+    starting_location = 1  # location 1 is the hub
     first_delivery_time = Time_Custom(8, 00, 00)
 
     def __init__(self):
@@ -17,9 +18,10 @@ class Truck():
         Assumes trucks start at the hub.
         '''
         self.props = Hash(ID=Truck.id_counter,
-                          location=1,  # location 1 is the hub
+                          location=Truck.starting_location,
                           time=Truck.first_delivery_time,
-                          packages=[])
+                          packages=[],
+                          mileage_for_day=0)
 
         Truck.id_counter += 1
 
@@ -67,6 +69,15 @@ class Truck():
         '''Load truck with packages.'''
         self.packages = pkg_load
 
+    def get_mileage_for_day(self):
+        '''Find and return actual mileage truck has traveled today.
+
+        This function currently just returns the distance passed in, but it
+        could be easily extended in the future to account for "real life",
+        for example if a truck was forced to take a detour.
+        '''
+        return self.props['mileage_for_day']
+
     def deliver(self, route):
         '''Deliver packages on truck.
 
@@ -84,18 +95,17 @@ class Truck():
             - distance_from_prev: distance from previous stop
             - projected_arrival: a Time_Custom object
         '''
+
         # TEMPORARY--this is helpful, put in test?
         pretty_route = '\n\t'.join([str(stop) for stop in route])
         print(f'\nin truck.deliver, route is: {pretty_route}')
-
-        # TODO: UPDATE TRUCK/SELF MILEAGE ( += stop.distance_from_prev )
-        # after defining a mileage property for trucks
 
         for stop in route:
             self.props['location'] = stop.location
             self.props['time'] = stop.projected_arrival
             self.props['packages'] = list(
                 set(self.props['packages']) - set(stop.packages))
+            self.props['mileage_for_day'] += stop.distance_from_prev
 
             for pkg in stop.packages:
                 pkg.set_state('DELIVERED')

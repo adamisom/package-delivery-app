@@ -118,11 +118,6 @@ def get_stop_packages(location_num, packages):
     # return [pkg.props['ID'] for pkg in packages
 
 
-def compute_route_distance(route):
-    '''Return total distance a route covers.'''
-    return sum([stop.distance_from_prev for stop in route])
-
-
 def build_route(pkg_load, distances, Locations, truck_speed, initial_leave):
     '''Return delivery route (list of stops) for a provided package-load.
 

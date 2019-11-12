@@ -10,6 +10,11 @@ from .classes.truck import Truck
 from .tests.general import test
 
 
+def display_distance_traveled(total_distance):
+    '''Display distance (in miles) traveled to deliver all packages.'''
+    print(f'\nTotal travel distance today was {total_distance:.2f} miles.')
+
+
 def is_package_delivered_and_on_time(package):
     '''Return whether the given package was delivered at all if it had no
     deadline, and whether it was delivered on time if it did have one.'''
@@ -105,12 +110,14 @@ def run_program(distance_csv, package_csv):
         if truck is last_truck_to_leave_in_morning:
             break
 
-    # for development only--save in tests?
-    display_number_delivered_on_time(packages)
-
     count = 0
     while not all_packages_delivered(packages) and count < 5:
         count += 1
+
+    total_distance = sum([truck.props['mileage_for_day']
+                          for truck in trucks])
+    display_distance_traveled(total_distance)
+    display_number_delivered_on_time(packages)
 
     # make_snapshot(Time_Custom(9, 00, 00), packages)
     # make_snapshot(Time_Custom(10, 00, 00), packages)

@@ -1,4 +1,10 @@
 ----THOUGHTS
+I'm ripe for a rewrite of algorithms.py
+The code is too confused... I'm too confused.
+I need to tame this complexity with paper/pencil then rewrite it. 
+Start by finding all interfaces--all inputs & outputs.
+And tame those parameters/inputs!
+
 I'm going to end up having a pick_route function that 
 returns a route. build_route will no longer have logic to
 make the NN route/order, but will still build Stops. I will
@@ -22,7 +28,7 @@ ESTIMATE: 5:50-6:40
 		it got shorter
 GIT PUSH + snack
 ESTIMATE 6:50-7:40
-	7. rename pick_load to pick_route, rename build_route to build_stops_for_route, and either remove or use Locations arg to build_
+	7. rename pick_load to pick_route, make_load_selection to make_route, build_route to build_stops_for_route, and either remove or use Locations arg to build_
 	8. build __main__ to 'loop'--to send whichever truck
 		finished first (of all trucks-with-drivers) again
 -COMMIT- EST. 7:15

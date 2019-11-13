@@ -1,21 +1,12 @@
-----THOUGHTS
+----NEXT?
 
 
-for later..
-  If I need to/could describe 'destinations corrections' in my write-up...
-"Destination corrections are received from the user of a program. This is necessary because currently neither corrected destinations nor the time by which a corrected destination will be known is part of the ‘package’ csv input file. Functionality in the cli module gathers all known destination-corrections and updates the relevant packages."
 
-----TODO BEFORE FINISHING:
-- Write and run more tests
-- Improve readme
-- Test out all the docstrings! Specifically, find out if I need to insert spaces at the beginning of very multi-line comment/docstring after the first line.
-
-----GOOD PLANNING - notes from How to Design Programs / HtDP
-TIPS
+----from How to Design Programs / HtDP
+TOP TIPS
 	1. Keep a wish list around and as long as it's not empty, work from it
 	2. One function per task
-	3. Focus on the why, not how, especially in the purpose statement.
-Do not pay attention to how until you need to. (Especially for recursion.)
+	3. Focus on the why, not how, especially in the purpose statement. Do not pay attention to how until you need to. (Especially for recursion.)
 	4. For some list processing you may want to ensure
 a list is non-empty before working with it.
 
@@ -49,7 +40,16 @@ FUNCTION DESIGN RECIPE
 	12. pass those tests
 	13. move the tests into a testing file and rerun them there
 	14. clean up the function
----------------------------------------------------------------------------
+-----------------------------------------------------------------
+For later..
+  If I need to/could describe 'destinations corrections' in my write-up...
+"Destination corrections are received from the user of a program. This is necessary because currently neither corrected destinations nor the time by which a corrected destination will be known is part of the ‘package’ csv input file. Functionality in the cli module gathers all known destination-corrections and updates the relevant packages."
+
+----TODO BEFORE FINISHING:
+- Write and run more tests
+- Improve readme
+- Test out all the docstrings! Specifically, find out if I need to insert spaces at the beginning of very multi-line comment/docstring after the first line.
+-----------------------------------------------------------------
 ----assoc with git commit 3a7319a
 ----meta note: to get the git commit, I first commit, then check the commit
 ----hash, then paste it in this file, then git commit --amend --no-edit
@@ -85,5 +85,3 @@ def function_for_testing_imports(param):
 def hash_test():
     hash_ex = Hash()
     print(f"called from hash_tests, here's a hash: {str(hash_ex)}")
-----
----- assoc with git commit ?

@@ -1,5 +1,4 @@
 # Adam Isom, Student ID #000906109
-from .algorithms import pick_load, build_route
 from .cli import (say_hello, make_snapshot, handle_snapshot_request,
                   get_destination_corrections_from_user)
 from .load import load_data
@@ -7,6 +6,7 @@ from .classes.time_custom import Time_Custom
 from .classes.hash import Hash
 from .classes.package import Package
 from .classes.truck import Truck
+from .classes.route_builder import RouteBuilder
 from .tests.general import test
 
 
@@ -24,7 +24,6 @@ def display_distance_traveled(total_distance):
 def is_package_delivered_and_on_time(package):
     '''Return whether the given package was delivered at all if it had no
     deadline, and whether it was delivered on time if it did have one.'''
-
     # # These print statements are useful, I may save them in tests
     # print(f"Package ID: {package.props['ID']}")
     # print(f"Deadline?\t{package.props['deadline']}")
@@ -56,7 +55,6 @@ def display_number_delivered_on_time(packages):
 
 def display_distances(distances):
     '''Print distance 2D-list as a readable table.
-
     For development use only (take out before promoting to production).'''
     string = ''
     for row in distances:
@@ -72,9 +70,7 @@ def run_program(distance_csv, package_csv):
     say_hello()
 
     distances, Locations, packages = load_data(distance_csv, package_csv)
-
-    # for development only--save in tests?
-    # display_distances(distances)
+    display_distances(distances)
 
     Destination_Corrections = get_destination_corrections_from_user(Locations)
 
@@ -84,28 +80,24 @@ def run_program(distance_csv, package_csv):
     for i in range(number_of_trucks):
         trucks.append(Truck())
 
-    initial_leave = Time_Custom(8, 00, 00)  # trucks first leave hub at 8 AM
-
-    # Initial departure of all trucks, if there's a driver for that truck.
-    # The last truck to leave is responsible for ensuring all packages meet
-    # their deadline. In the future, if one truck isn't enough, the last two
-    # or three could be responsible, or another solution could be found.
-    last_truck_to_leave_in_morning = trucks[number_of_drivers-1]
     for truck in trucks:
-        pkgs_at_hub = truck.get_deliverable_packages(
+        packages_ready = truck.get_available_packages(
             packages, Destination_Corrections)
 
-        is_last = True if truck is last_truck_to_leave_in_morning else False
-        truck_num = truck.props['ID']
-        pkg_load = pick_load(pkgs_at_hub, distances, is_last, truck_num)
-        truck.load(pkg_load)
+        route_parameters = Hash(
+            ['available_packages', packages_ready],
+            ['distances', distances],
+            ['max_load', Truck.max_packages],
+            ['truck_number', truck.props['ID']],
+            ['Locations', Locations],
+            ['speed_function', Truck.speed_function],
+            ['starting_location', Truck.starting_location],
+            ['initial_leave_time', Truck.first_delivery_time])
 
-        route = build_route(pkg_load, distances, Locations,
-                            Truck.speed_function, initial_leave)
+        route_builder = RouteBuilder(route_parameters)
+        route, load = route_builder.build_route()
+        truck.load(load)
         truck.deliver(route)
-
-        if truck is last_truck_to_leave_in_morning:
-            break
 
     count = 0
     while not all_packages_delivered(packages) and count < 5:
@@ -123,9 +115,6 @@ def run_program(distance_csv, package_csv):
     # handle_snapshot_request(packages)
 
     # test()  # take out this line before promoting to production
-
-    # TODO: from Rubric: "The verification includes the total miles added to
-    # all trucks, and it states that all packages were delivered on time."
 
 
 if __name__ == '__main__':

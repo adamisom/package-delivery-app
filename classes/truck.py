@@ -57,13 +57,19 @@ class Truck():
                 if pkg.props['state'].name == 'WRONG_DESTINATION':  # need if?
                     pkg.update_wrong_destination_as_corrected()
 
-    def get_deliverable_packages(self, all_packages, destination_corrections):
+    def get_available_packages(self, all_packages, destination_corrections):
         '''Return list of packages at hub and update late or wrong-destination
         packages that have (respectively) arrived or been corrected.'''
         self.update_late_packages(all_packages)
         self.update_corrected_packages(all_packages, destination_corrections)
+        at_hub = [pkg for pkg in all_packages
+                  if pkg.props['state'].name == 'AT_HUB']
+        ID = self.props['ID']
+        can_go = [pkg for pkg in all_packages
+                  if (pkg.props['special_note']['truck_number'] is None or
+                      pkg.props['special_note']['truck_number'] == ID)]
         return [pkg for pkg in all_packages
-                if pkg.props['state'].name == 'AT_HUB']
+                if pkg in at_hub and pkg in can_go]
 
     def load(self, pkg_load):
         '''Load truck with packages.'''
@@ -125,4 +131,4 @@ class Truck():
         For now, this program assumes trucks' average speed is always 18 mph
         between any two locations, starting/stopping time notwithstanding.
         '''
-        return 18
+        return cls.average_speed

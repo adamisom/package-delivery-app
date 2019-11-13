@@ -46,10 +46,7 @@ def validate_values(time_parts):
 
 
 def handle_snapshot_request(packages):
-    '''Listen for user input and generate snapshot when input is valid.
-
-    TODO: Rename this. Also rename the get_destin... function name.
-    '''
+    '''Listen for user input and generate snapshot when input is valid.'''
     give_user_snapshot_instructions()
 
     user_requested_time = input('Whenever you\'re ready...  ')

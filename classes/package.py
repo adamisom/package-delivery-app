@@ -159,29 +159,32 @@ class Package():
 '''
     The following regex functions are not part of the Package class because
     they do not need to be--they neither consume nor produce Package objects.
-
-    # TODO: compile the 4 regex below. Put the re.compile's on lines 165-8
 '''
+# digit_regex = re.compile("(\d{1,2}):(\d{2}) (am|pm)", re.IGNORECASE)
+truck_pattern = re.compile("(only)(.*?)(truck) \d", re.IGNORECASE)
+delivery_pattern = re.compile("(delivered with \d+[, \d+]*)", re.IGNORECASE)
+arrival_pattern = re.compile("(delayed)(.*?)\d\d?:\d\d (am|pm)", re.IGNORECASE)
+destination_pattern = re.compile("wrong address", re.IGNORECASE)
 
 
 def truck_regex_match(note):
     '''Return regex match for a truck-number constraint in a special note.'''
-    return re.search("(only)(.*?)(truck) \d", note, re.IGNORECASE)
+    return truck_pattern.search(note)
 
 
 def delivery_regex_match(note):
     '''Return regex match for a delivery constraint in a special note.'''
-    return re.search("(delivered with \d+[, \d+]*)", note, re.IGNORECASE)
+    return delivery_pattern.search(note)
 
 
 def arrival_regex_match(note):
     '''Return regex match for a late-arrival constraint in a special note.'''
-    return re.search("(delayed)(.*?)\d\d?:\d\d (am|pm)", note, re.IGNORECASE)
+    return arrival_pattern.search(note)
 
 
 def destination_regex_match(note):
     '''Return regex match for wrong-destination constraint in special note.'''
-    return re.search("wrong address", note, re.IGNORECASE)
+    return destination_pattern.search(note)
 
 
 def validate_truck_number(integers_found):

@@ -1,15 +1,3 @@
-import random
-from copy import deepcopy
-from collections import namedtuple
-from .classes.time_custom import Time_Custom
-
-
-# TODO: consider making a Neighbor namedtuple (location, distance_from_prev)
-# Stop defined and used in build_route
-Stop = namedtuple('Stop', ['location', 'packages',
-                           'distance_from_prev', 'projected_arrival'])
-
-
 def get_nearest_neighbor(starting_from, destination_numbers, distances):
     '''Return the location-number nearest to a provided location-number.
 
@@ -42,7 +30,6 @@ def get_nearest_neighbor(starting_from, destination_numbers, distances):
     return nearest
 
 
-# TODO: remove max_load if I don't end up needing it after all.
 def nearest_neighbors_route(destination_numbers, distances, max_load):
     '''Return an ordered route as well as total distance traveled for a
     given set of destinations (Locations) to visit, up to max_load locations.
@@ -301,9 +288,7 @@ def pick_load(pkgs_at_hub, distances, is_last, truck_num):
     index_of_min_distance = simulated_load_distances.index(
         min(simulated_load_distances))
 
-    # hang on a darn second. does that get all 32??
-    print(f'\n\nFor truck number {truck_num}, with is_last being {is_last},')
-
+    # Pretty printing:
     pretty_pkgs = [str(pkg) for pkg
                    in simulated_load_package_IDs[index_of_min_distance]]
     pretty_pkgs = '\n'.join(pretty_pkgs)
@@ -321,36 +306,12 @@ def get_projected_arrival(speed_function, dist_from_prev, stop_A, location_B):
     return projected_arrival
 
 
-def get_stop_packages(location_num, packages):
-    '''Return list of package-IDs to be dropped off at a given location.'''
-    # TODO: update docstring to lop off "-IDs"
-    return [pkg for pkg in packages
-            if pkg.props['location'].num == location_num]
-    # return [pkg.props['ID'] for pkg in packages
-
-
 def build_route(pkg_load, distances, Locations, truck_speed, initial_leave):
-    '''Return delivery route (list of stops) for a provided package-load.
-
-    Data definition:
-    A 'Stop' on a 'Route' is a namedtuple, comprising:
-        - location*
-        - packages: list of packages to drop off at this location
-        - distance_from_prev: distance from previous stop
-        - projected_arrival: a Time_Custom object
-    A Route is then simply a list of Stops.
-
-    *A Location is itself a namedtuple of num, landmark, address.
-
-    This function assumes that routes should start at the hub.
-
-    # TODO: append a Location to a stop instead of just a location_num?
-    Otherwise, delete argument/parameter Locations as it isn't used.
-    '''
+    '''Return delivery route (list of stops) for a provided package-load.'''
     route = []
     destination_numbers = get_location_nums(pkg_load)
 
-    location_num = 1  # routes start at the hub (location #1)
+    location_num = 1
 
     while len(destination_numbers) > 0:
         nearest_neighbor = get_nearest_neighbor(

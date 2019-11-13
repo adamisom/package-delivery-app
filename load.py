@@ -214,8 +214,6 @@ def populate_packages(package_data, location_namedtuples):
         if deadline is not None:
             deadline = Time_Custom.make_time_from_string(package_row[5])
 
-            print(f'\n\tDEADLINE IS!\t{deadline}')
-
         data_to_use = [package_row[0], deadline] + package_row[6:8]
         new_package = Package(*data_to_use, destination)
         all_packages.append(new_package)

@@ -4,14 +4,14 @@ from collections import namedtuple
 from .classes.time_custom import Time_Custom
 
 
+# TODO: consider making a Neighbor namedtuple (location, distance_from_prev)
 # Stop defined and used in build_route
 Stop = namedtuple('Stop', ['location', 'packages',
                            'distance_from_prev', 'projected_arrival'])
 
 
 def get_nearest_neighbor(starting_from, destination_numbers, distances):
-    '''Return the package-destination's location-number nearest to a provided
-    location-number.
+    '''Return the location-number nearest to a provided location-number.
 
     Inputs:
     - starting_from: a Location's num property. Locations are namedtuples
@@ -42,24 +42,27 @@ def get_nearest_neighbor(starting_from, destination_numbers, distances):
     return nearest
 
 
-def nearest_neighbors_total_distance(destination_numbers, distances):
-    '''Return total distance traveled in a simulated route.
+def nearest_neighbors_route(destination_numbers, distances):
+    '''Return an ordered route as well as total distance traveled for a
+    given set of destinations (Locations) to visit.
 
     This function assumes trucks start at the hub (initial location 1).
     '''
     distance_traveled = 0
     location = 1
+    route_order = []
 
     while len(destination_numbers) > 0:
         nearest_neighbor = get_nearest_neighbor(
             location, destination_numbers, distances)
 
         location = nearest_neighbor[0]
+        route_order.append(location)
         destination_numbers.remove(location)
 
         distance_traveled += nearest_neighbor[1]
 
-    return distance_traveled
+    return route_order, distance_traveled
 
 
 def get_location_nums(pkgs):
@@ -110,8 +113,8 @@ def pick_to_satisfy_deliver_constraints(pkg_load, pkgs_at_hub):
     for pkg in pkg_load:
         if pkg.props['special_note']['deliver_with']:
             for ID in pkg.props['special_note']['deliver_with']:
-                deliver_with.append([pkg for pkg in pkgs_at_hub
-                                    if pkg.props['ID'] == ID])
+                deliver_with += [pkg for pkg in pkgs_at_hub
+                                 if pkg.props['ID'] == ID]
 
     return [pkg for pkg in deliver_with if pkg not in pkg_load]
 
@@ -126,8 +129,9 @@ def add_up_to_max_load(pkg_load, candidates_to_add, max_load):
     return pkg_load
 
 
-def make_load_selection(pkgs_at_hub, max_load, is_last, truck_num):
-    '''Generate one possible selection of packages for loading.'''
+def make_initial_selection(pkgs_at_hub, max_load, is_last, truck_num):
+    '''Generate a partial selection of packages for loading based off of
+    deadline, truck-number, same-destination, and deliver-with.'''
     load = []
 
     if is_last:
@@ -135,31 +139,97 @@ def make_load_selection(pkgs_at_hub, max_load, is_last, truck_num):
         load = add_up_to_max_load(load, candidates, max_load)
     if len(load) == max_load:
         return load
+    # print(f'after pick for deadlines (truck num {truck_num}, load is {load}, len-load is {len(load)}')
 
     candidates = pick_to_satisfy_truck_constraints(load, pkgs_at_hub,
                                                    truck_num)
     load = add_up_to_max_load(load, candidates, max_load)
     if len(load) == max_load:
         return load
+    # print(f'after pick for truck.. (truck num {truck_num}, load is {load}, len-load is {len(load)}')
 
     candidates = pick_same_destination_packages(load, pkgs_at_hub)
     load = add_up_to_max_load(load, candidates, max_load)
     if len(load) == max_load:
         return load
+    # if len(load) != 0:
+    #     print(f'after pick for destination.. (truck num {truck_num}, load is {load}, len-load is {len(load)}')
 
     candidates = pick_to_satisfy_deliver_constraints(load, pkgs_at_hub)
     load = add_up_to_max_load(load, candidates, max_load)
     if len(load) == max_load:
         return load
+    # if len(load) != 0:
+    #     print(f'after pick for deliver-with.. (truck num {truck_num}, load is {load}, len-load is {len(load)}')
 
-    while len(load) < 16:
-        load.append(None)
+    return load
 
-        # get nearest-neighbor, but only for locations with any packages
 
-        # call same_dest helper and add to load
+def add_throughout(load, order, candidate_locations,
+                   pkgs_at_hub, distances, max_load):
+    '''.'''
+    new_route_order = order
 
-        # call deliver_with helper and add to load
+    for index, location_num in enumerate(order):
+        # immediately return if max_load has been reached
+        if len(load) == max_load:
+            return load
+
+        # exit the loop one item early, due to the index + 1 look-ahead below
+        if location_num == order[-1]:
+            return load
+
+        # nearest[0] is location, nearest[1] is distance-away
+        nearest = get_nearest_neighbor(
+            location_num, candidate_locations, distances)
+
+        current_next = order[index + 1]
+        possible_next = nearest[0]
+
+        if possible_next != current_next:
+            # if it wouldn't take twice as long or more, go to 'nearest' right
+            # after this location, before going to current_next
+            if (distances[location_num][possible_next] +
+                    distances[possible_next][current_next] <
+                    2 * distances[location_num][current_next]):
+                new_route_order = (new_route_order[:index] + [possible_next] +
+                                   new_route_order[index:])
+
+    return new_route_order
+
+
+def add_to_end(load, order, candidate_locations,
+               pkgs_at_hub, distances, max_load):
+    '''.'''
+    pass
+
+
+def make_load_selection(pkgs_at_hub, distances, max_load, is_last, truck_num):
+    '''Generate one possible selection of packages for loading.'''
+
+    # NEW IDEA:
+    candidate_locations = get_location_nums(pkgs_at_hub)
+
+    load = make_initial_selection(pkgs_at_hub, max_load, is_last, truck_num)
+    order = []
+
+    if len(load) > 0 and len(load) < max_load:
+        destination_numbers = get_location_nums(load)
+        candidate_locations = list(
+            set(candidate_locations) - set(destination_numbers))
+
+        order = nearest_neighbors_route(destination_numbers, distances)[0]
+        load = add_throughout(load, order, candidate_locations,
+                              pkgs_at_hub, distances, max_load)
+
+    load = add_to_end(load, order, candidate_locations,
+                      pkgs_at_hub, distances, max_load)
+
+    # get nearest-neighbor, but only for locations with any packages
+
+    # call same_dest helper and add to load
+
+    # call deliver_with helper and add to load
 
     # call helper to drop some(all, droppable) if I have too many
 
@@ -191,6 +261,7 @@ def pick_load(pkgs_at_hub, distances, is_last, truck_num):
                          if p.props['special_note']['truck_number'] is None or
                          p.props['special_note']['truck_number'] == truck_num]
         hypothetical_package_load = make_load_selection(eligible_pkgs,
+                                                        distances,
                                                         16,
                                                         is_last,
                                                         truck_num)
@@ -198,13 +269,22 @@ def pick_load(pkgs_at_hub, distances, is_last, truck_num):
         destination_numbers = get_location_nums(hypothetical_package_load)
 
         simulated_load_package_IDs.append(hypothetical_package_load)
-        simulated_load_distances.append(
-            nearest_neighbors_total_distance(destination_numbers, distances))
+        distance = nearest_neighbors_route(destination_numbers, distances)[1]
+        simulated_load_distances.append(distance)
 
     # By the way, since Python's index stops at the first occurence in a list,
     # if two routes tied on distance, the first one simulated is returned
     index_of_min_distance = simulated_load_distances.index(
         min(simulated_load_distances))
+
+    # hang on a darn second. does that get all 32??
+    print(f'\n\nFor truck number {truck_num}, with is_last being {is_last},')
+
+    pretty_pkgs = [str(pkg) for pkg
+                   in simulated_load_package_IDs[index_of_min_distance]]
+    pretty_pkgs = '\n'.join(pretty_pkgs)
+    print(f'All IDs: {pretty_pkgs}')
+
     return simulated_load_package_IDs[index_of_min_distance]
 
 
@@ -239,6 +319,9 @@ def build_route(pkg_load, distances, Locations, truck_speed, initial_leave):
     *A Location is itself a namedtuple of num, landmark, address.
 
     This function assumes that routes should start at the hub.
+
+    # TODO: append a Location to a stop instead of just a location_num?
+    Otherwise, delete argument/parameter Locations as it isn't used.
     '''
     route = []
     destination_numbers = get_location_nums(pkg_load)
@@ -255,7 +338,6 @@ def build_route(pkg_load, distances, Locations, truck_speed, initial_leave):
 
         packages_for_stop = get_stop_packages(location_num, pkg_load)
 
-        # previous_stop = None
         if len(route) == 0:
             previous_stop = None
             projected_arrival = initial_leave

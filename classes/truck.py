@@ -98,7 +98,7 @@ class Truck():
 
         # TEMPORARY--this is helpful, put in test?
         pretty_route = '\n\t'.join([str(stop) for stop in route])
-        print(f'\nin truck.deliver, route is: {pretty_route}')
+        # print(f'\nin truck.deliver, route is: {pretty_route}')
 
         for stop in route:
             self.props['location'] = stop.location

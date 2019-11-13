@@ -1,23 +1,59 @@
 ----THOUGHTS
-How can I pick better? 
+I'm going to end up having a pick_route function that 
+returns a route. build_route will no longer have logic to
+make the NN route/order, but will still build Stops. I will
+probs call it build_stops_for_route instead of build_route
 
-Thoughts: 
-I could just completely simplify and:
+Alright, here's my strategy for the end:
+ESTIMATE: 4:04-5:00
+	0.1 rewrite nn_total_dist to also return route itself
+	1. write+call order_route that uses build_'s NN logic)
+		just using above but I'll still refer to build_ later
+	2. write+call add_throughout, not using helpers
+-COMMIT- EST. 4:40-ACTUAL: 5:20
+	3. write+call add_to_end, not using helpers
+	4. extend both add_'s to call same_dest, deliver_with
+GIT PUSH + browse
+ESTIMATE: 5:50-6:40
+	5. write+call non-iterative swap_segs for n=3 segs
+-COMMIT- EST. 6:20
+	6. extend swap_ by putting in a loop for n=3 to n=8
+		and also putting each n in a loop to go again if 
+		it got shorter
+GIT PUSH + snack
+ESTIMATE 6:50-7:40
+	7. rename pick_load to pick_route, rename build_route to build_stops_for_route, and either remove or use Locations arg to build_
+	8. build __main__ to 'loop'--to send whichever truck
+		finished first (of all trucks-with-drivers) again
+-COMMIT- EST. 7:15
+	9. clean/tidy up, make final todos,, make sure docstrings are filled in, and test out docstrings.
+	10. final SMALL todos collected from step 9
+GIT PUSH + walk
+ESTIMATE 7:50-8:30
+	11. add some tests. ALSO improve the readme.md
+GIT PUSH + GO HOME
+ESTIMATE 9:30-10:30 AT HOME, plus tomorrow morning
+	12...back to the write-up...
 
-1. pick any truck constraints + deadline constraints
-2. pick all other packages going to those places or having deliver-withs
-3. if somehow this is above max_load, randomly drop enough from step 2
-4. until I have max_load or above
-  a. pick the nearest location left that has packages for there
-  b. pick all packages going there
-  c. also do deliver-with constraint check
-5. again if I have above, randomly drop enough from 4 until I have 16 or very close like 13-14ish
 
+I have a set to meet some constraints--how do I optimally pick the rest?
+I'm thinking something like this:
 
-- pick the nearest location
-	- pick all its packages
-- 
+construct an ordering to the packages so far, built off NN
+make a list of locations having (non-truck-restricted) pkgs still remaining
 
+while not yet long enough: add throughout (helper)
+	at the beginning, is the NN the closest among the 'remaining'?
+		if not, continue
+		if it is, how close is it?
+			if it's not more than twice as long for A-C-B than A-B, insert
+			else continue
+
+while still not yet long enough: add to end (helper)
+	find NN to end, add it, and then we're done
+
+it'd be nice to save the order for build_route;it'd make code more readable
+ESPECIALLY if I made pick_load do segment-swapping too
 
   If I need to/could describe 'destinations corrections' in my write-up...
 "Destination corrections are received from the user of a program. This is necessary because currently neither corrected destinations nor the time by which a corrected destination will be known is part of the ‘package’ csv input file. Functionality in the cli module gathers all known destination-corrections and updates the relevant packages."

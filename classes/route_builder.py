@@ -68,9 +68,9 @@ class RouteBuilder():
               f'{[str(pkg) for pkg in self.get_packages()]}', '-' * 79)
 
     def grouped_deliver_with_constraints(self):
-        '''Return list of lists of available-packages' IDs where each list
+        '''Return list of lists of readya-packages' IDs where each list
         comprises IDs of packages that must be delivered together.'''
-        deliver_withs = [pkg for pkg in self.available_pkgs
+        deliver_withs = [pkg for pkg in self.ready_pkgs
                          if pkg.props['special_note']['deliver_with']]
         sets = []
         for pkg in deliver_withs:
@@ -184,7 +184,7 @@ class RouteBuilder():
             because if it didn't before this was called, this function would
             select some "partially" visited locations
         '''
-        if len(self.available_pkgs) == 0:
+        if len(self.ready_pkgs) == 0:
             return []  # empty route
         self.add_first_stop()
         # cool stuff after this line
@@ -194,10 +194,55 @@ class RouteBuilder():
 
             dummy += 1
 
+        # BLOCK 1 (3 TEST blocks):
+        #    TEST 1: works up to now--first/final, try/except, truck deliver
+        # add urgent deadlines to temp list
+        #    TEST 1.1: truck load gets pkgs
+
+        # check if full, if so, randomly eject right # to be full
+        # iff truck initial leave time >= 9:00am, also add other deadlines
+        # check if full, if so, randomly eject right # to be full
+        # add deliver-withs not in there yet to temp list
+        #    TEST 2: d-w added (alter data to make it happen if need be)
+
+        # check if size ok and if not eject d-w in reverse size-order until ok
+        #    TEST 3: alter data so size exceeded and know+check expected result
+
+        # BLOCK 2 (3 TEST blocks):
+        # add truck constraints to temp list
+        # check if full, if so, randomly eject right # to be full
+        # add deliver-withs not in there yet to temp list
+        #    TEST: (1) truck (alter in main) (2) d-ws added (alter in load)
+
+        # check if size ok and if not, eject d-w in reverse size-order until ok
+        # if room left smaller than avail - sum(d-w's), remove d-ws from ready,
+        #    TEST: d-ws removed from ready
+
+        # else add d-ws until no more groups can fit
+        #    TEST: set up many d-ws, then test groups added until can't fit
+
+        # BLOCK 3 (1 TEST block):
+        # create route order from those packages' stops: just use NN
+        #    TEST: route note messed up/order/distances are reasonable
+
+        # BLOCK 4 (2 TEST blocks):
+        # look for nearby neighbors
+        #    TEST: nearbys are added, route/stops still good, overall dist ok
+
+        # add more at end
+        #    TEST: route extended, stops still good, overall dist ok
+
+        # BLOCK 5 (3 TEST blocks):
+        # optimize and convert
+        #    TEST: route is actually optimized, dists are updated and correct
+
+        #    TEST: trace what is going on at every step of optimize and verify
+
+        #    TEST: (1) stopplus works/check main (2) test diff nearby #s
         ############################
         # cool stuff above this line
         self.add_final_stop()  # must be done before next two lines
         self.route = improve_route(self.route, self.distances,
                                    RouteBuilder.Stop)
         self.convert_to_stopplus()
-        return self.route
+        return self.route, self.get_packages()

@@ -50,7 +50,7 @@ class RouteBuilder():
     def display_route(self, called_by):
         '''Display route.'''
         stops = '\n'.join([display_stop(stop) for stop in self.route])
-        print(f'{called_by}, Route is {self.compute_route()}mi, with {stops}')
+        print(f'{called_by}, Route is {self.compute_dist()}mi, with {stops}')
         print(f'\n\nLoad has {len(self.get_packages())} pkgs, including: '
               f'{[str(pkg) for pkg in self.get_packages()]}', '-' * 79)
 
@@ -61,23 +61,6 @@ class RouteBuilder():
     def get_packages(self):
         '''Return list of all packages currently in route.'''
         return [stop.packages for stop in self.route]
-
-    def compute_route(self):
-        '''Return total distance of route.'''
-        return sum([stop.distance_from_prev for stop in self.route])
-
-    def Location_from_number(self, num):
-        '''Return a Location from a location-number.'''
-        return [L for L in self.Locations if L.num==num][0]
-
-    def add_first_stop(self):
-        '''Add first stop.'''
-        self.route.append(RouteBuilder.Stop(self.starting_location, 0, []))
-
-    def add_final_stop(self):
-        '''Add final stop. (This must be done before route uses StopPluses.)'''
-        dist = self.distances[self.route[-1].location][1]
-        self.route.append(RouteBuilder.Stop(self.starting_location, dist, []))
 
     def unvisited_with_packages(self):
         '''Return list of unvisited location-numbers that have packages.'''
@@ -91,14 +74,73 @@ class RouteBuilder():
 
     def find_nearest(self, Stop, optional_list=None):
         '''Return nearest neighbor-with-packages to Stop passed in.'''
-    starting_from = zip(self.distances[0], self.distances[Stop.location])
-    eligible_neighbors = [RouteBuilder.Neighbor(loc_num, dist)
-                          for (loc_num, dist) in starting_from
-                          if loc_num in self.unvisited_with_packages()]
-    return min(eligible_neighbors,
-               key=lambda neighbor: neighbor.distance_from_prev)
+        starting_from = zip(self.distances[0], self.distances[Stop.location])
+        eligible_neighbors = [RouteBuilder.Neighbor(loc_num, dist)
+                              for (loc_num, dist) in starting_from
+                              if loc_num in self.unvisited_with_packages()]
+        return min(eligible_neighbors,
+                   key=lambda neighbor: neighbor.distance_from_prev)
 
+    def compute_dist(self):
+        '''Return total distance of route.'''
+        return sum([stop.distance_from_prev for stop in self.route])
 
+    def Location_from_number(self, num):
+        '''Return a Location from a location-number.'''
+        return [L for L in self.Locations if L.num==num][0]
+
+    def get_truck_constraint_packages(self):
+        '''Return list of available packages that must go on this truck.'''
+
+    def get_most_urgent_packages(self):
+        '''Return list of available packages with deadline before 10:00 AM.'''
+        pass
+
+    def get_other_deadline_packages(self):
+        '''Return list of available packages with deadline after 10:00 AM.'''
+        pass
+
+    def get_deliver_with_constraint_packages(self):
+        '''Return list of available packages having deliver-with constraint,
+        and their deliver-with constraints.'''
+        pass
+
+    def get_packages_on_the_way(self):
+        '''Return list of available packages on the way of current route.'''
+        pass
+
+    def add_first_stop(self):
+        '''Add first stop.'''
+        self.route.append(RouteBuilder.Stop(self.starting_location, 0, []))
+
+    def add_final_stop(self):
+        '''Add final stop. (This must be done before route uses StopPluses.)'''
+        dist = self.distances[self.route[-1].location][1]
+        self.route.append(RouteBuilder.Stop(self.starting_location, dist, []))
+
+    def get_projected_arrival(self, stop):
+        '''Return projected arrival time for a stop on a route.'''
+        index = self.route.index(stop)
+        if index == 0:
+            return self.initial_leave_time
+        previous = self.route[index - 1]
+        avg_speed = self.speed_function(previous.loc, stop.loc)
+        minutes = 60 * (stop.dist / avg_speed)
+        projected_arrival = Time_Custom.clone(previous.arrival)
+        try:  # TODO: take out this try/except when I know my app works
+            projected_arrival.add_time(minutes)
+        except ValueError:
+            print(f'\n\tUH OH! Tried adding {minutes} minutes\n')
+        return projected_arrival
+
+    def convert_to_stopplus(self):
+        '''Replace each Stop in route with a StopPlus--add projected arrival,
+        and replace location number with reference to a Location.'''
+        for index, stop in enumerate(self.route):
+            Location = self.Location_from_number(stop.loc)
+            projected_arrival = self.get_projected_arrival(stop)
+            self.route[index] = RouteBuilder.StopPlus(
+                Location, stop.dist, stop.pkgs, projected_arrival)
 
     def build_route(self):
         '''Return a delivery route (list of stops).'''
@@ -108,4 +150,5 @@ class RouteBuilder():
         self.route = improve_route(self.route, self.distances,
                                    RouteBuilder.Stop)
 
-        pass
+        self.convert_to_stopplus()
+        return self.route

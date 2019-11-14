@@ -70,7 +70,8 @@ def run_program(distance_csv, package_csv):
     say_hello()
 
     distances, Locations, packages = load_data(distance_csv, package_csv)
-    display_distances(distances)
+
+    # display_distances(distances)
 
     Destination_Corrections = get_destination_corrections_from_user(Locations)
 
@@ -81,6 +82,12 @@ def run_program(distance_csv, package_csv):
         trucks.append(Truck())
 
     for truck in trucks:
+        # temporary
+        # if truck.props['ID'] != 1:
+        #     return
+
+        # TODO: see why this is returning all 40,
+        # given that several have late arrival it should be <40
         packages_ready = truck.get_available_packages(
             packages, Destination_Corrections)
 

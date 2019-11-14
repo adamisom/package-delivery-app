@@ -102,8 +102,8 @@ def run_program(distance_csv, package_csv):
             ['initial_leave_time', Truck.first_delivery_time])
 
         route_builder = RouteBuilder(route_parameters)
-        route, load = route_builder.build_route()
-        truck.load(load)
+        route = route_builder.build_route()
+        truck.load(route_builder.get_packages())
         truck.deliver(route)
 
     count = 0

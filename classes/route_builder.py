@@ -1,6 +1,6 @@
 import random
 from collections import namedtuple
-from .route_builder import improve_route
+from .route_helpers import improve_route
 from .time_custom import Time_Custom
 from .hash import Hash
 
@@ -44,17 +44,17 @@ class RouteBuilder():
 
     def get_locations(self):
         '''Return list of location-numbers/locations currently in route.'''
-        return [stop.location for stop in self.route]
+        return [stop.loc for stop in self.route]
 
     def get_packages(self):
         '''Return list of all packages currently in route.'''
-        return [stop.packages for stop in self.route]
+        return [pkg for stop in self.route for pkg in stop.pkgs]
 
     def display_stop(self, stop):
         '''Display one stop.'''
         pkgs = ''.join(['\tPkg '+p.props['ID']+'/'+p.props['location'].address
                         for p in stop.pkgs.sort(key=lambda p: p.props['ID'])])
-        print(f'Stop. At: {stop.location}, +{stop.dist}mi, w/{pkgs}')
+        print(f'Stop. At: {stop.loc}, +{stop.dist}mi, w/{pkgs}')
 
     def compute_dist(self):
         '''Return total distance of route.'''
@@ -106,7 +106,7 @@ class RouteBuilder():
 
     def find_nearest(self, Stop, optional_list=None):
         '''Return nearest neighbor-with-packages to Stop passed in.'''
-        starting_from = zip(self.distances[0], self.distances[Stop.location])
+        starting_from = zip(self.distances[0], self.distances[Stop.loc])
         eligible_neighbors = [RouteBuilder.Neighbor(loc_num, dist)
                               for (loc_num, dist) in starting_from
                               if loc_num in self.unvisited_with_packages()]
@@ -142,7 +142,7 @@ class RouteBuilder():
 
     def add_final_stop(self):
         '''Add final stop.'''
-        dist = self.distances[self.route[-1].location][1]
+        dist = self.distances[self.route[-1].loc][1]  # from previous to hub
         self.route.append(RouteBuilder.Stop(self.starting_location, dist, []))
 
     def Location_from_number(self, num):
@@ -190,59 +190,59 @@ class RouteBuilder():
         # cool stuff after this line
         ############################
         dummy = 0
-        while len(self.get_packages() < self.max_load) and dummy < 100:
+        while len(self.get_packages()) < self.max_load and dummy < 100:
 
             dummy += 1
 
         # BLOCK 1 (3 TEST blocks):
-        #    TEST 1: works up to now--first/final, try/except, truck deliver
+        # X  TEST (1/2): works up to now--first/final, try/except, trk-deliver
         # add urgent deadlines to temp list
-        #    TEST 1.1: truck load gets pkgs
+        # _  TEST (2/2 for Subblock 1): truck load gets pkgs
 
         # check if full, if so, randomly eject right # to be full
         # iff truck initial leave time >= 9:00am, also add other deadlines
         # check if full, if so, randomly eject right # to be full
         # add deliver-withs not in there yet to temp list
-        #    TEST 2: d-w added (alter data to make it happen if need be)
+        # _  TEST: d-w added (alter data to make it happen if need be)
 
         # check if size ok and if not eject d-w in reverse size-order until ok
-        #    TEST 3: alter data so size exceeded and know+check expected result
+        # _  TEST: alter data so size exceeded and know+check expected result
 
         # BLOCK 2 (3 TEST blocks):
         # add truck constraints to temp list
         # check if full, if so, randomly eject right # to be full
         # add deliver-withs not in there yet to temp list
-        #    TEST: (1) truck (alter in main) (2) d-ws added (alter in load)
+        # _  TEST: (1) truck (alter in main) (2) d-ws added (alter in load)
 
         # check if size ok and if not, eject d-w in reverse size-order until ok
         # if room left smaller than avail - sum(d-w's), remove d-ws from ready,
-        #    TEST: d-ws removed from ready
+        # _  TEST: d-ws removed from ready
 
         # else add d-ws until no more groups can fit
-        #    TEST: set up many d-ws, then test groups added until can't fit
+        # _  TEST: set up many d-ws, then test groups added until can't fit
 
         # BLOCK 3 (1 TEST block):
         # create route order from those packages' stops: just use NN
-        #    TEST: route note messed up/order/distances are reasonable
+        # _  TEST: route note messed up/order/distances are reasonable
 
         # BLOCK 4 (2 TEST blocks):
         # look for nearby neighbors
-        #    TEST: nearbys are added, route/stops still good, overall dist ok
+        # _  TEST: nearbys are added, route/stops still good, overall dist ok
 
         # add more at end
-        #    TEST: route extended, stops still good, overall dist ok
+        # _  TEST: route extended, stops still good, overall dist ok
 
         # BLOCK 5 (3 TEST blocks):
         # optimize and convert
-        #    TEST: route is actually optimized, dists are updated and correct
+        # _  TEST: route is actually optimized, dists are updated and correct
 
-        #    TEST: trace what is going on at every step of optimize and verify
+        # _  TEST: trace what is going on at every step of optimize and verify
 
-        #    TEST: (1) stopplus works/check main (2) test diff nearby #s
+        # _  TEST: (1) stopplus works/check main (2) test diff nearby #s
         ############################
         # cool stuff above this line
         self.add_final_stop()  # must be done before next two lines
         self.route = improve_route(self.route, self.distances,
                                    RouteBuilder.Stop)
         self.convert_to_stopplus()
-        return self.route, self.get_packages()
+        return self.route

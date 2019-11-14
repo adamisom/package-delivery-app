@@ -73,7 +73,10 @@ class Truck():
 
     def load(self, pkg_load):
         '''Load truck with packages.'''
-        self.packages = pkg_load
+        self.props['packages'] = pkg_load
+
+        # # TEMPORARY
+        # print(f"Packages loaded onto truck: {self.props['packages']}")
 
     def get_mileage_for_day(self):
         '''Find and return actual mileage truck has traveled today.
@@ -96,24 +99,25 @@ class Truck():
 
         Data definition (see algorithms.py for more):
         A 'Stop' on a 'Route' is a namedtuple, comprising:
-            - location: location of the stop
-            - packages: list of packages to drop off at this location
-            - distance_from_prev: distance from previous stop
-            - projected_arrival: a Time_Custom object
+            - loc: location of the stop
+            - pkgs: list of packages to drop off at this location
+            - dist: distance from previous stop
+            - arrival: a Time_Custom object (projected arrival, not actual)
         '''
 
-        # TEMPORARY--this is helpful, put in test?
-        pretty_route = '\n\t'.join([str(stop) for stop in route])
-        # print(f'\nin truck.deliver, route is: {pretty_route}')
+        # # TEMPORARY
+        # pretty_route = '\n\t'.join([str(stop) for stop in route])
+        # print(f'in truck.deliver, route is: {pretty_route}')
+        # return
 
         for stop in route:
-            self.props['location'] = stop.location
-            self.props['time'] = stop.projected_arrival
+            self.props['location'] = stop.loc
+            self.props['time'] = stop.arrival
             self.props['packages'] = list(
-                set(self.props['packages']) - set(stop.packages))
-            self.props['mileage_for_day'] += stop.distance_from_prev
+                set(self.props['packages']) - set(stop.pkgs))
+            self.props['mileage_for_day'] += stop.dist
 
-            for pkg in stop.packages:
+            for pkg in stop.pkgs:
                 pkg.set_state('DELIVERED')
                 pkg.add_to_history('DELIVERED', self.props['time'])
 

@@ -1,6 +1,6 @@
 import random
 from collections import namedtuple
-from itertools import permutations
+from .route_builder import improve_route
 from .time_custom import Time_Custom
 from .hash import Hash
 
@@ -99,9 +99,13 @@ class RouteBuilder():
                key=lambda neighbor: neighbor.distance_from_prev)
 
 
+
     def build_route(self):
         '''Return a delivery route (list of stops).'''
         if len(self.available_packages) == 0:
             return []  # empty route
+
+        self.route = improve_route(self.route, self.distances,
+                                   RouteBuilder.Stop)
 
         pass

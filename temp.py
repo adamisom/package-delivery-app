@@ -355,22 +355,9 @@ def add_projected_arrival_times_and_Locations(self):
 
 
 def build_route(self):
-    '''Return a delivery route (list of stops).
-
-    Notes:
-    1. The following functions mutate package_load, route,
-    and candidate_stops.
-    2. If package_load is size max_load after any one of these calls,
-    subsequent calls won't add any more to the load or the route.
-    3. Each function does its own check for deliver-with constraints.
-    '''
-    if len(self.available_packages) == 0:
-        return self.route, self.package_load  # both were empty-initialized
-
     self.add_first_stop()  # starts at hub
     self.display_route('after add_first_stop')
     self.get_candidate_stops()
-    # self.display_route_params_and_candidate_stops()
 
     self.pick_packages_requiring_this_truck()
     self.display_load('pick_packages_requiring_this_truck')
@@ -383,10 +370,9 @@ def build_route(self):
     self.add_stops_at_end()
     self.display_load('add_stops_at_end')
 
-    self.add_final_stop()  # back to hub (must add before optimize_route)
+    self.add_final_stop()
     self.display_route()
-    # self.optimize_route()
-    # self.display_route('after optimize_route')
+    self.optimize_route()
 
     self.add_projected_arrival_times_and_Locations()
     self.display_route()

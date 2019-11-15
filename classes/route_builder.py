@@ -47,10 +47,10 @@ class RouteBuilder():
         '''TEMPORARY function to pretty-print list of packages passed in.'''
         print('\n'.join([str(pkg) for pkg in pkgs]))
 
-    def sort_by_hub_closeness(self):
+    def sort_by_hub_closeness(self, pkgs=None):
         '''Iffy on whether I'll keep this function--truck/deadline use it.'''
         return sorted(
-            self.get_packages(),
+            pkgs if pkgs else self.get_packages(),
             key=lambda pkg: self.distances[1][pkg.props['location'].num])
 
     def display_hub_closeness(self):
@@ -225,22 +225,22 @@ class RouteBuilder():
         # cool stuff after this line
         ############################
         # helper for printing a list of packages; swap BEFORE + AFTER:
-        # print('\nBEFORE:'); self.display_packages(pkgs_to_load)  # AFTER
+        # print('\nAFTER:'); self.display_packages(pkgs_to_load)
 
         groups = self.grouped_deliver_with_constraints()
 
-        # First check for urgent packages and truck-constraint packages, and
-        # any that must be delivered with those, but don't add to route until
-        # checking that they all fit; then add to route using nearest-neighbor.
+        #   I.  Add urgent packages and truck-constraint packages first.
+        # Also add any that must be delivered with those. We aren't adding any
+        # stops to the route yet--we just make a package-list for now.
         pkgs_to_load = []
-
         pkgs_to_load += self.get_most_urgent_packages()
         pkgs_to_load += self.get_truck_constraint_packages()
 
         if len(pkgs_to_load) > self.max_load:
-            pkgs_to_load = pkgs_to_load[:self.max_load]
-        updated = pkgs_to_load[:]
+            closer_first = self.sort_by_hub_closeness(pkgs_to_load)
+            pkgs_to_load = closer_first[:self.max_load]
 
+        updated = pkgs_to_load[:]
         for pkg in pkgs_to_load:
             for deliver_with in groups:
                 if pkg in deliver_with:
@@ -250,27 +250,22 @@ class RouteBuilder():
                     else:
                         updated.remove(pkg)
 
-        # now add the list to the route. Hmmm... why just 3 packages so far?
+        #   II.  Add other deliver-with groups that will fit (smallest-first).
+        # The idea here is to get them out of the way as soon as possible.
+        # We still haven't added to the route--so it is likely the first route
+        # will be longer than the second, since it is mostly driven by package
+        # constraints rather than distance/closest-next.
+        for group in groups:  # deliver-with method sorted them smallest-first
+            new_list = list(set(pkgs_to_load).union(set(group)))
+            if len(new_list) <= self.max_load:
+                pkgs_to_load = new_list
+
         # FOR NOW, below incorrectly load all packages to go to same stop
         # self.route.append(RouteBuilder.Stop(5, 5.0, pkgs_to_load))
         self.route.append(RouteBuilder.Stop(5, 5.0, updated))
         self.display_route()
 
-        # uh, what's this doing here? doesn't belong here yet
-        # closer_first = self.sort_by_hub_closeness()  # 14, 20, 21 are closest
-        # if len(pkgs_to_load) > self.max_load:
-        #     pkgs_to_load = closer_first[:self.max_load]
-
-        # self.display_route()
-
-        # add any other deliver-with groups that can fit (PART OF BLOCK 2-HA!)
-        # for group in groups:
-        #     new_list = list(set(pkgs_to_load).union(set(group)))
-        #     if len(new_list) <= self.max_load:
-        #         pkgs_to_load += group
-        # self.display_route()
-
-        # BLOCK 2 (3 TEST blocks):
+        # BLOCK 2 (2 TEST blocks, retroactively):
         # add truck constraints to temp list
         # check if full, if so, randomly eject right # to be full
         # add deliver-withs not in there yet to temp list
@@ -278,14 +273,14 @@ class RouteBuilder():
 
         # check if size ok and if not, eject d-w in reverse size-order until ok
         # if room left smaller than avail - sum(d-w's), remove d-ws from ready,
-        # _  TEST: d-ws removed from ready
-
         # else add d-ws until no more groups can fit
-        # _  TEST: set up many d-ws, then test groups added until can't fit
+        # X  TEST: set up many d-ws, then test groups added until can't fit
 
-        # BLOCK 3 (1 TEST block):
-        # create route order from those packages' stops: just use NN
+        # BLOCK 3 (2 TEST blocks, one retroactively added):
+        # create route order from those packages' stops: just use NN,
+        # plus (NEWLY ADDED) make sure main
         # _  TEST: route note messed up/order/distances are reasonable
+        # _  TEST: main loops until all packages are delivered
 
         dummy = 0  # while loop below is for BLOCK 4 and only Block 4
         while len(self.get_packages()) < self.max_load and dummy < 100:

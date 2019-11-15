@@ -83,11 +83,11 @@ def run_program(distance_csv, package_csv):
 
     for truck in trucks:
         # TEMPORARY TEST STUFF BELOW
-        if truck.props['ID'] != 2:  # WHIEL TESTING, switch this between 1 / 2
+        if truck.props['ID'] != 2:  # WHILE TESTING, switch this between 1 / 2
             continue
         for pkg in packages:
             pass
-            pkg.props['special_note']['truck_number'] = 2  # TEMP / TST
+            # pkg.props['special_note']['truck_number'] = 2  # TEMP / TST
             # if pkg.props['ID'] != 15:
             #     pkg.props['deadline'] = Time_Custom(10, 30, 00)
 
@@ -105,6 +105,7 @@ def run_program(distance_csv, package_csv):
             ['initial_leave_time', Truck.first_delivery_time])
 
         route_builder = RouteBuilder(route_parameters)
+        print(f"From main, gonna build route for truck {truck.props['ID']}\n")
         route = route_builder.build_route()
         truck.load(route_builder.get_packages())
         truck.deliver(route)

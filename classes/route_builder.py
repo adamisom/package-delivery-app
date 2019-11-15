@@ -20,7 +20,7 @@ class RouteBuilder():
     A StopPlus has a location* instead of just a location number, plus it has
         - arrival: a proejcted arrival time (Time_Custom objec)
     * A Location is itself a namedtuple of num, landmark, address.
-
+G
     I use the namedutple _replace method to create new ones. Per the docs*,
     since namedtuples are accessed via dot notation, "To prevent conflicts
     with field names, the method and attribute names start with an underscore."
@@ -92,8 +92,8 @@ class RouteBuilder():
         print('-' * 79)
 
     def grouped_deliver_with_constraints(self):
-        '''Return list of lists of ready-packages' IDs where each list
-        comprises IDs of packages that must be delivered together.'''
+        '''Return list of lists of ready packages, sorted smaller first,
+        each list comprising packages that must be delivered together.'''
         deliver_withs = [pkg for pkg in self.ready_pkgs
                          if pkg.props['special_note']['deliver_with']]
         sets = []
@@ -113,7 +113,11 @@ class RouteBuilder():
             sets = [set_ for set_ in sets if set_ not in overlaps]
             IDs = IDs.union(*overlaps)
             sets.append(IDs)
-        return [list(set_) for set_ in sets]
+
+        pkgs_from_IDs = [[pkg for pkg in self.ready_pkgs
+                          if pkg.props['ID'] in set_]
+                         for set_ in sets]
+        return sorted(pkgs_from_IDs, key=lambda lst: len(lst))
 
     def unvisited_with_packages(self):
         '''Return list of unvisited locations with ready unpicked packages.'''
@@ -218,6 +222,7 @@ class RouteBuilder():
         ############################
         pkgs_to_load = []
         pkgs_to_load += self.get_most_urgent_packages()
+
         self.route.append(RouteBuilder.Stop(5, 5.0, pkgs_to_load))
 
         closer_first = self.sort_by_hub_closeness()  # 14, 20, 21 are closest
@@ -226,14 +231,31 @@ class RouteBuilder():
 
         self.display_route()
 
-        # cannot believe I have not tested this yet
         groups = self.grouped_deliver_with_constraints()
-        # print(f'DELIVER-WITH GROUPS: {groups}\n')
-        for deliver_with_group in groups:
-            for ID in deliver_with_group:
-                match, = [p for p in self.ready_pkgs if p.props['ID'] == ID]
-                self.route[-1].pkgs.append(match)
-        self.display_stop(self.route[1])
+        # prt_ = '\n*\n'.join(['\n'.join([str(p) for p in g]) for g in groups])
+        # print(f'DELIVER-WITH GROUPS: {prt_}\n')
+
+        # add any packages that must be delivered with the above
+        updated = pkgs_to_load[:]  # TODO: try converting this to listcomp
+        for pkg in pkgs_to_load:
+            for deliver_with in groups:
+                if pkg in deliver_with:
+                    together = list(set(updated).union(set(deliver_with)))
+                    if len(together) <= self.max_load:
+                        updated += deliver_with
+                    else:
+                        updated.remove(pkg)
+        pkgs_to_load = updated
+
+        # why only 3 packages? (only +2)
+        self.route[-1] = self.route[-1]._replace(pkgs=pkgs_to_load)
+
+        # add any other deliver-with groups that can fit (PART OF BLOCK 2-HA!)
+        # for group in groups:
+        #     new_list = list(set(pkgs_to_load).union(set(group)))
+        #     if len(new_list) <= self.max_load:
+        #         pkgs_to_load += group
+        # self.display_route()
 
         # BLOCK 1 (3 TEST blocks):
         # X  TEST (1/2): works up to now--first/final, try/except, trk-deliver

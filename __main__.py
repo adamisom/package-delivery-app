@@ -87,10 +87,9 @@ def run_program(distance_csv, package_csv):
             continue
         for pkg in packages:
             pass
-            # pkg.props['special_note']['deliver_with'] = [4]
             # pkg.props['special_note']['truck_number'] = [1]
-            if pkg.props['ID'] != 15:
-                pkg.props['deadline'] = Time_Custom(10, 30, 00)
+            # if pkg.props['ID'] != 15:
+            #     pkg.props['deadline'] = Time_Custom(10, 30, 00)
 
         # TODO: see why this is returning all 40,
         # given that several have late arrival it should be <40

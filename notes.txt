@@ -1,5 +1,5 @@
 I complete this in a way I can take pride in, by Sat:
- -   Block 1 < R 3:55@libP 2h -ACTUAL: ~4h
+ -   Block 1 < R 3:55@libP 2h -ACTUAL: 4.0h
  	- SB 1.1 < 
  	- SB 1.2 < 
  	- SB 1.3 < 
@@ -33,32 +33,6 @@ I complete this in a way I can take pride in, by Sat:
 Initial estimate: 15h
 Now on track for: 17h
 Actual time spent: ?h
-
-
-----NEXT?
-9:58 I forgot where I left off yesterday: I know I fixed a bug whereby for_here and goes_with could overlap, or something.
-
-I know I was trying to figure out what is ACTUALLY going on in my program because route_builder isn't transparent enough. I added some good print statements, but was thinking about some tests. I know that both add_ methods don't seem to work, and not sure about optimize_, which I know has two bugs: it isn't resetting distances and it moves start and end when it shouldn't (two bugs). 
-
-The next thing I'm going to do is get main to hopefully 'work' in that trucks keep coming until delivery is done, and total distance is reported and all packages are on time. 
-	If that doesn't happen, I'll find out why.
-	And once it does, I'll fix my route stuff.
-
-10:07 Oh yeah-candidate stops may not be populating, I'll check that now. Also: only 17 pkgs and 82.9 dist after 2 loads? Bad.
-
-10:17 new problem: despite turning off optimize_, I saw a route not starting with stop 1. Also, looks like I have duplicate stops again. 
-Finally, a time of 0 though I don't know why/where it came from.
-
-10:43 add_nearby_neighbors is putting things before hub at start, and it's also re-adding a stop already in route (#22)
-Ah: changed insert to index + 1, and called remove candidate stops for all stops currently in route--in packages_on_way.
-
-10:59 Aw shit, bad bug. Goes_with packages are currently being added to the current stop's package, and of course that's wrong. How on earth am I supposed to add stops at every single point that I call deliver_with? 
-I may need to do ANOTHER rewrite :/
-
-11:14 I decided to do a rewrite, because of the big deliver thing, and I'll just do deliver with first. 
-
-11:25 brief break, thinking, no don't do deliver-with first but DO remove from consideration any deliver-with packages at all afte rthe initial truck+deadline picks .. and only when no more of those exist then get as many deliver-withs as possible..??
-
 
 
 ----from How to Design Programs / HtDP

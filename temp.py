@@ -2,18 +2,43 @@
 (*) to test sget_other_deadline_packages
 if self.initial_leave_time > Time_Custom(9, 00, 00):
             temp += self.get_other_deadline_packages()
+(*) to test d-w groups get added for truck/deadline pkgs:
+# put these 2 lines in main for truck/trucks
+if 1 <= pkg.props['ID'] <= 21:  # go back and forth with 20/21
+    pkg.props['special_note']['deliver_with'] = [15]
+# put in route_builder
+# add any packages that must be delivered with the above
+updated = pkgs_to_load[:]  # TODO: try converting this to listcomp
+for pkg in pkgs_to_load:
+    for deliver_with in groups:
+        if pkg in deliver_with:
+            together = list(set(updated).union(set(deliver_with)))
+            if len(together) <= self.max_load:
+                updated += deliver_with
+            else:
+                updated.remove(pkg)
+pkgs_to_load = updated
+(*) to test d-w groups do get added smallest-first AFTER (next section)
+for pkg in packages:  # inside main / for truck in trucks
+    # pass
+    if 1 <= pkg.props['ID'] <= 22:
+        pkg.props['special_note']['deliver_with'] = [4]
+    elif 23 <= pkg.props['ID'] <= 28:
+        pkg.props['special_note']['deliver_with'] = [26]
+    elif 29 <= pkg.props['ID'] <= 37:
+        pkg.props['special_note']['deliver_with'] = [33]
+    else:  # for pkg IDs 38-40
+        pkg.props['special_note']['deliver_with'] = [39]
+groups = self.grouped_deliver_with_constraints()
+print_ = '\n*\n'.join(['\n'.join([str(p) for p in g]) for g in groups])
+print(f'DELIVER-WITH GROUPS: {print_}\n')
+for group in groups:
+    new_list = list(set(pkgs_to_load).union(set(group)))
+    if len(new_list) <= self.max_load:
+        pkgs_to_load += group
+self.display_route()
 (*)
 '''
-
-
-# # If the truck would be over half full just from deadline-packages,
-# # let the next truck grab some. This code isn't 'smart' about which
-# # ones it keeps, so it could grab only one of a few that are heading
-# # to the same place, but pick_packages_on_the_way oughta fix that.
-# up_to = int(self.max_load/2)
-# # DEVELOPMENT note: for the first load, this function causes pkg 39
-# # to be skipped-loc 7, like pkg 13-but packages_on_way picks up 39!
-# deadlines_selection = having_deadlines[:up_to]
 
 # # canonical stuff:
 # nearest = self.find_nearest(self.route[-1]

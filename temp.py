@@ -37,13 +37,35 @@ for group in groups:
     if len(new_list) <= self.max_load:
         pkgs_to_load += group
 self.display_route()
-(*)
+(*) to view deliver-with groups
+# prt_ = '\n*\n'.join(['\n'.join([str(p) for p in g]) for g in groups])
+# print(f'DELIVER-WITH GROUPS: {prt_}\n')
 '''
 
-# # canonical stuff:
+# # canonical stuff from older code:
 # nearest = self.find_nearest(self.route[-1]
 # if len(self.package_load + for_here + goes_with) <= self.max_load:
 # self.route.append(RouteBuilder.Stop(...))
+
+''' MISCELLANEOUS OR LOW_PRIORITY TODOS:
+convert this(*1) into a listcomp(*2), and in case I change the code,
+this is the section that checks for deliver-withs, specifically after
+truck/deadline constraints are added, at the beginning of build_route
+(*1) updated = pkgs_to_load[:]
+for pkg in pkgs_to_load:
+    for deliver_with in groups:
+        if pkg in deliver_with:
+            together = list(set(updated).union(set(deliver_with)))
+            if len(together) <= self.max_load:
+                updated += deliver_with
+            else:
+                updated.remove(pkg)
+(*2) idea: start from deliver-with groups, not pkgs_to_load, like this:
+for deliver_with_group in groups:
+            if any([])
+... I'm thinking the listcomp for the any will have to be nested somehow.
+
+'''
 
 
 def add_nearby_neighbors(self, acceptable_increase):

@@ -20,7 +20,7 @@ class RouteBuilder():
     A StopPlus has a location* instead of just a location number, plus it has
         - arrival: a proejcted arrival time (Time_Custom objec)
     * A Location is itself a namedtuple of num, landmark, address.
-G
+
     I use the namedutple _replace method to create new ones. Per the docs*,
     since namedtuples are accessed via dot notation, "To prevent conflicts
     with field names, the method and attribute names start with an underscore."
@@ -42,6 +42,10 @@ G
         self.initial_leave_time = route_parameters['initial_leave_time']
 
         self.route = []
+
+    def display_packages(self, pkgs):
+        '''TEMPORARY function to pretty-print list of packages passed in.'''
+        print('\n'.join([str(pkg) for pkg in pkgs]))
 
     def sort_by_hub_closeness(self):
         '''Iffy on whether I'll keep this function--truck/deadline use it.'''
@@ -220,35 +224,44 @@ G
         self.add_first_stop()
         # cool stuff after this line
         ############################
-        pkgs_to_load = []
-        pkgs_to_load += self.get_most_urgent_packages()
-
-        self.route.append(RouteBuilder.Stop(5, 5.0, pkgs_to_load))
-
-        closer_first = self.sort_by_hub_closeness()  # 14, 20, 21 are closest
-        if len(pkgs_to_load) > self.max_load:
-            pkgs_to_load = closer_first[:self.max_load]
-
-        self.display_route()
+        # helper for printing a list of packages; swap BEFORE + AFTER:
+        # print('\nBEFORE:'); self.display_packages(pkgs_to_load)  # AFTER
 
         groups = self.grouped_deliver_with_constraints()
-        # prt_ = '\n*\n'.join(['\n'.join([str(p) for p in g]) for g in groups])
-        # print(f'DELIVER-WITH GROUPS: {prt_}\n')
 
-        # add any packages that must be delivered with the above
-        updated = pkgs_to_load[:]  # TODO: try converting this to listcomp
+        # First check for urgent packages and truck-constraint packages, and
+        # any that must be delivered with those, but don't add to route until
+        # checking that they all fit; then add to route using nearest-neighbor.
+        pkgs_to_load = []
+
+        pkgs_to_load += self.get_most_urgent_packages()
+        pkgs_to_load += self.get_truck_constraint_packages()
+
+        if len(pkgs_to_load) > self.max_load:
+            pkgs_to_load = pkgs_to_load[:self.max_load]
+        updated = pkgs_to_load[:]
+
         for pkg in pkgs_to_load:
             for deliver_with in groups:
                 if pkg in deliver_with:
                     together = list(set(updated).union(set(deliver_with)))
                     if len(together) <= self.max_load:
-                        updated += deliver_with
+                        updated = together
                     else:
                         updated.remove(pkg)
-        pkgs_to_load = updated
 
-        # why only 3 packages? (only +2)
-        self.route[-1] = self.route[-1]._replace(pkgs=pkgs_to_load)
+        # now add the list to the route. Hmmm... why just 3 packages so far?
+        # FOR NOW, below incorrectly load all packages to go to same stop
+        # self.route.append(RouteBuilder.Stop(5, 5.0, pkgs_to_load))
+        self.route.append(RouteBuilder.Stop(5, 5.0, updated))
+        self.display_route()
+
+        # uh, what's this doing here? doesn't belong here yet
+        # closer_first = self.sort_by_hub_closeness()  # 14, 20, 21 are closest
+        # if len(pkgs_to_load) > self.max_load:
+        #     pkgs_to_load = closer_first[:self.max_load]
+
+        # self.display_route()
 
         # add any other deliver-with groups that can fit (PART OF BLOCK 2-HA!)
         # for group in groups:
@@ -257,25 +270,11 @@ G
         #         pkgs_to_load += group
         # self.display_route()
 
-        # BLOCK 1 (3 TEST blocks):
-        # X  TEST (1/2): works up to now--first/final, try/except, trk-deliver
-        # add urgent deadlines to temp list
-        # X  TEST (2/2 for Subblock 1): truck load gets urgent pkgs
-
-        # check if full, if so, randomly eject right # to be full
-        # iff truck initial leave time >= 9:00am, also add other deadlines
-        # check if full, if so, randomly eject right # to be full
-        # add deliver-withs not in there yet to temp list
-        # X  TEST: d-w added (alter data to make it happen if need be)
-
-        # check if size ok and if not eject d-w in reverse size-order until ok
-        # _  TEST: alter data so size exceeded and know+check expected result
-
         # BLOCK 2 (3 TEST blocks):
         # add truck constraints to temp list
         # check if full, if so, randomly eject right # to be full
         # add deliver-withs not in there yet to temp list
-        # _  TEST: (1) truck (alter in main) (2) d-ws added (alter in load)
+        # X  TEST: (1) truck (alter in main) (2) d-ws added (alter in load)
 
         # check if size ok and if not, eject d-w in reverse size-order until ok
         # if room left smaller than avail - sum(d-w's), remove d-ws from ready,

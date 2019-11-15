@@ -1,30 +1,38 @@
-I complete this in a way I can take pride in, by Sat@9am:
- -   Block 1 < R 3:55@libP 2h
+I complete this in a way I can take pride in, by Sat:
+ -   Block 1 < R 3:55@libP 2h -ACTUAL: ~4h
  	- SB 1.1 < 
  	- SB 1.2 < 
  	- SB 1.3 < 
- -   Block 2 < R 6:00@libP 1.5h < TODAY NOTE: 7:40 TRAX
+ -   Block 2 < F 7:45@libM 1.5h
  	- SB 2.1 < 
  	- SB 2.2 < 
  	- SB 2.3 < 
- -   Block 3 < R 8:15@home 1h
+ -   Block 3 < F 9:00@libM 1h
  	- SB 3.1 < 
- -   Block 4 < F 7:45@libM 2.5h
- 	- SB 4.2 < 
- -   Block 5 < F 12:30@B&N 3h
+ -   Block 4 < F 12:30@B&N 2.5h
+ 	- SB 4.1 < 
+  	- SB 4.2 < 
+ -   Block 5 < F 3:30@B&N (0.5)
+ 			 + F 5:00@B&N (+2=2.5h)
  	- SB 5.1 < 
  	- SB 5.2 < 
  	- SB 5.3 < 
  - WRITING Block 6 < 
- 	- SB 6.1 < F 04:45@B&N 2h
+ 	- SB 6.1 < SA 7:15@RoCo 1.5h
  	Write as fast as possible
- 	- SB 6.2 < F 9:00@home 1.5h
+ 	- SB 6.2 < SA 9:00@RoCo 0.75h
  	Clean up writing & Submit writing+code
  - PRESENTATION B7 < 
- 	- SB 7.1 < SA 7:15@RoCo 1h
+ 	- SB 7.1 < SA 10:00@RoCo 1h
  	Add requirements + my features to readme
- 	- SB 7.2 < SA 8:30@RoCo 0.5h = initial est. 15h total
- 	Comb code for professionalism + pin it
+ 	- SB 7.2 < SA 11:15@RoCo 0.5h 
+ 	Comb code for professionalism + pin repo
+ - UNIT TESTS Blk8 < 
+ 	- SB 8.1 < SA 12:00@RoCo 1.75h
+ 	Add some tests.
+Initial estimate: 15h
+Now on track for: 17h
+Actual time spent: ?h
 
 
 ----NEXT?

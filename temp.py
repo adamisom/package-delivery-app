@@ -1,3 +1,11 @@
+''' TESTING SNIPPETS
+(*) to test sget_other_deadline_packages
+if self.initial_leave_time > Time_Custom(9, 00, 00):
+            temp += self.get_other_deadline_packages()
+(*)
+'''
+
+
 # # If the truck would be over half full just from deadline-packages,
 # # let the next truck grab some. This code isn't 'smart' about which
 # # ones it keeps, so it could grab only one of a few that are heading

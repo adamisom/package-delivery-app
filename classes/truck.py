@@ -76,7 +76,8 @@ class Truck():
         self.props['packages'] = pkg_load
 
         # # TEMPORARY
-        # print(f"Packages loaded onto truck: {self.props['packages']}")
+        # pkgs = '\n'.join([str(p) for p in self.props['packages']])
+        # print(f"Packages loaded onto truck: {pkgs}")
 
     def get_mileage_for_day(self):
         '''Find and return actual mileage truck has traveled today.

@@ -3,6 +3,7 @@ from collections import namedtuple
 from .route_helpers import improve_route
 from .time_custom import Time_Custom
 from .hash import Hash
+import pdb  # TEMPORARY
 
 
 class RouteBuilder():
@@ -42,6 +43,22 @@ class RouteBuilder():
 
         self.route = []
 
+    def sort_by_hub_closeness(self):
+        '''Iffy on whether I'll keep this function--truck/deadline use it.'''
+        return sorted(
+            self.get_packages(),
+            key=lambda pkg: self.distances[1][pkg.props['location'].num])
+
+    def display_hub_closeness(self):
+        '''TEMPORARY function to test sort_by_hub_closeness is being used.'''
+        sorted_pkgs = self.sort_by_hub_closeness()
+        pkgs = '\n\t'.join(
+            [f"Pkg {str(pkg.props['ID']).ljust(2)} loc "
+             f"{str(pkg.props['location'].num).ljust(2)} "
+             f"is {self.distances[1][pkg.props['location'].num]} miles "
+             'from the hub' for pkg in sorted_pkgs])
+        print(f'\nPackages in order of closeness to hub: \n\t{pkgs}\n')
+
     def get_locations(self):
         '''Return list of location-numbers/locations currently in route.'''
         return [stop.loc for stop in self.route]
@@ -50,31 +67,38 @@ class RouteBuilder():
         '''Return list of all packages currently in route.'''
         return [pkg for stop in self.route for pkg in stop.pkgs]
 
-    def display_stop(self, stop):
-        '''Display one stop.'''
-        pkgs = ''.join(['\tPkg '+p.props['ID']+'/'+p.props['location'].address
-                        for p in stop.pkgs.sort(key=lambda p: p.props['ID'])])
-        print(f'Stop. At: {stop.loc}, +{stop.dist}mi, w/{pkgs}')
-
     def compute_dist(self):
         '''Return total distance of route.'''
-        return sum([stop.distance_from_prev for stop in self.route])
+        return sum([stop.dist for stop in self.route])
 
-    def display_route(self, called_by):
+    def display_stop(self, stop):
+        '''Display one stop.'''
+        pkgs = ''.join(
+            [f"\n\tPkg {str(p.props['ID']).rjust(2)}, to go to location "
+             f"{p.props['location'].num} /\t{p.props['location'].address}"
+             for p in sorted(stop.pkgs, key=lambda p: p.props['ID'])])
+        print(f'This Stop is number {self.route.index(stop)+1} on the route, '
+              f'to go location #{stop.loc}, which is {stop.dist} miles from '
+              f'the last stop, and has these packages:{pkgs}')
+
+    def display_route(self, called_by=''):
         '''Display route.'''
-        stops = '\n'.join([display_stop(stop) for stop in self.route])
-        print(f'{called_by}, Route is {self.compute_dist()}mi, with {stops}')
-        print(f'\n\nLoad has {len(self.get_packages())} pkgs, including: '
-              f'{[str(pkg) for pkg in self.get_packages()]}', '-' * 79)
+        print(f'{called_by}/ ROUTE is {self.compute_dist()}mi, with stops:')
+        for stop in self.route:
+            self.display_stop(stop)
+        print(f'Load has {len(self.get_packages())} pkgs, including:')
+        for pkg in self.get_packages():
+            print(str(pkg))
+        print('-' * 79)
 
     def grouped_deliver_with_constraints(self):
-        '''Return list of lists of readya-packages' IDs where each list
+        '''Return list of lists of ready-packages' IDs where each list
         comprises IDs of packages that must be delivered together.'''
         deliver_withs = [pkg for pkg in self.ready_pkgs
                          if pkg.props['special_note']['deliver_with']]
         sets = []
         for pkg in deliver_withs:
-            IDs = pkg.props['ID'] + pkg.props['special_note']['deliver_with']
+            IDs = [pkg.props['ID']] + pkg.props['special_note']['deliver_with']
             IDs = set(IDs)
             # if this is a subset of a set in sets, skip
             if any(IDs.issubset(set_) for set_ in sets):
@@ -100,7 +124,7 @@ class RouteBuilder():
                 if loc_num in stops_with_pkgs and
                 loc_num not in self.get_locations()]
 
-    def get_packages_left(self):
+    def packages_left(self):
         '''Return list of packages ready to go not already in route.'''
         return list(set(self.ready_pkgs) - set(self.get_packages()))
 
@@ -111,7 +135,7 @@ class RouteBuilder():
                               for (loc_num, dist) in starting_from
                               if loc_num in self.unvisited_with_packages()]
         return min(eligible_neighbors,
-                   key=lambda neighbor: neighbor.distance_from_prev)
+                   key=lambda neighbor: neighbor.dist)
 
     def get_truck_constraint_packages(self):
         '''Return list of packages left that must go on this truck.'''
@@ -183,27 +207,44 @@ class RouteBuilder():
             stops_with_pkgs assumes pick up packages on way ALREADY HAPPENED
             because if it didn't before this was called, this function would
             select some "partially" visited locations
+            - How To:
+                (*) update a stop's packages, if need be:
+                stop = stop._replace(pkgs=new_list)
         '''
         if len(self.ready_pkgs) == 0:
             return []  # empty route
         self.add_first_stop()
         # cool stuff after this line
         ############################
-        dummy = 0
-        while len(self.get_packages()) < self.max_load and dummy < 100:
+        pkgs_to_load = []
+        pkgs_to_load += self.get_most_urgent_packages()
+        self.route.append(RouteBuilder.Stop(5, 5.0, pkgs_to_load))
 
-            dummy += 1
+        closer_first = self.sort_by_hub_closeness()  # 14, 20, 21 are closest
+        if len(pkgs_to_load) > self.max_load:
+            pkgs_to_load = closer_first[:self.max_load]
+
+        self.display_route()
+
+        # cannot believe I have not tested this yet
+        groups = self.grouped_deliver_with_constraints()
+        # print(f'DELIVER-WITH GROUPS: {groups}\n')
+        for deliver_with_group in groups:
+            for ID in deliver_with_group:
+                match, = [p for p in self.ready_pkgs if p.props['ID'] == ID]
+                self.route[-1].pkgs.append(match)
+        self.display_stop(self.route[1])
 
         # BLOCK 1 (3 TEST blocks):
         # X  TEST (1/2): works up to now--first/final, try/except, trk-deliver
         # add urgent deadlines to temp list
-        # _  TEST (2/2 for Subblock 1): truck load gets pkgs
+        # X  TEST (2/2 for Subblock 1): truck load gets urgent pkgs
 
         # check if full, if so, randomly eject right # to be full
         # iff truck initial leave time >= 9:00am, also add other deadlines
         # check if full, if so, randomly eject right # to be full
         # add deliver-withs not in there yet to temp list
-        # _  TEST: d-w added (alter data to make it happen if need be)
+        # X  TEST: d-w added (alter data to make it happen if need be)
 
         # check if size ok and if not eject d-w in reverse size-order until ok
         # _  TEST: alter data so size exceeded and know+check expected result
@@ -225,6 +266,11 @@ class RouteBuilder():
         # create route order from those packages' stops: just use NN
         # _  TEST: route note messed up/order/distances are reasonable
 
+        dummy = 0  # while loop below is for BLOCK 4 and only Block 4
+        while len(self.get_packages()) < self.max_load and dummy < 100:
+
+            dummy += 1
+
         # BLOCK 4 (2 TEST blocks):
         # look for nearby neighbors
         # _  TEST: nearbys are added, route/stops still good, overall dist ok
@@ -241,8 +287,8 @@ class RouteBuilder():
         # _  TEST: (1) stopplus works/check main (2) test diff nearby #s
         ############################
         # cool stuff above this line
-        self.add_final_stop()  # must be done before next two lines
-        self.route = improve_route(self.route, self.distances,
-                                   RouteBuilder.Stop)
+        self.add_final_stop()  # must be done before next two statements
+        # self.route = improve_route(self.route, self.distances,
+        #                            RouteBuilder.Stop)
         self.convert_to_stopplus()
         return self.route

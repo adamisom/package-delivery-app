@@ -80,42 +80,40 @@ def run_program(distance_csv, package_csv):
     number_of_trucks = 3
     number_of_drivers = 2
     trucks = []
-    # for i in range(number_of_drivers):  # truckscan't be sent without drivers
-    for i in range(number_of_trucks):
+    for i in range(number_of_drivers):  # trucks can't be sent without drivers
         trucks.append(Truck())
 
-    for truck in trucks:
-        # TEMPORARY TEST STUFF BELOW
-        # if truck.props['ID'] != 1:  # WHILE TESTING switch this between 1 / 2
-        #     continue
-        # for pkg in packages:
-        #     pass
-            # pkg.props['special_note']['truck_number'] = 2  # TEMP / TST
-            # if pkg.props['ID'] != 15:
-            #     pkg.props['deadline'] = Time_Custom(10, 30, 00)
-
-        packages_ready = truck.get_available_packages(
-            packages, Destination_Corrections)
-
-        route_parameters = Hash(
-            ['available_packages', packages_ready],
-            ['distances', distances],
-            ['max_load', Truck.max_packages],
-            ['truck_number', truck.props['ID']],
-            ['Locations', Locations],
-            ['speed_function', Truck.speed_function],
-            ['starting_location', Truck.starting_location],
-            ['initial_leave_time', Truck.first_delivery_time])
-
-        route_builder = RouteBuilder(route_parameters)
-        print(f"From main, gonna build route for truck {truck.props['ID']}\n")
-        route = route_builder.build_route()
-        truck.load(route_builder.get_packages())
-        truck.deliver(route)
-
     count = 0
-    while count < 1 and not all_packages_delivered(packages):
+    while count < 5 and not all_packages_delivered(packages):
         count += 1
+        for truck in trucks:
+            # TEMPORARY TEST STUFF BELOW
+            # if truck.props['ID'] != 1:  # FOR TESTING switch this between 1/2
+            #     continue
+            # for pkg in packages:
+            #     pass
+                # pkg.props['special_note']['truck_number'] = 2  # TEMP / TST
+                # if pkg.props['ID'] != 15:
+                #     pkg.props['deadline'] = Time_Custom(10, 30, 00)
+
+            packages_ready = truck.get_available_packages(
+                packages, Destination_Corrections)
+
+            route_parameters = Hash(
+                ['available_packages', packages_ready],
+                ['distances', distances],
+                ['max_load', Truck.max_packages],
+                ['truck_number', truck.props['ID']],
+                ['Locations', Locations],
+                ['speed_function', Truck.speed_function],
+                ['starting_location', Truck.starting_location],
+                ['initial_leave_time', Truck.first_delivery_time])
+
+            route_builder = RouteBuilder(route_parameters)
+            print(f"From main, building route for truck {truck.props['ID']}\n")
+            route = route_builder.build_route()
+            truck.load(route_builder.get_packages())
+            truck.deliver(route)
 
     total_distance = sum([truck.props['mileage_for_day']
                           for truck in trucks])

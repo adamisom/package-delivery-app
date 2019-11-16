@@ -22,6 +22,9 @@ Further notes:
   - Under the hood, hashed keys and their values are stored as nested lists.
   - Hash objects are doubled and rehashed when >60% of buckets/slots are used.
   - The internal _hash method is basic and should not be regarded as secure.
+
+TODO: adjust __setitem__ to reduce count when replacing items
+that themselves were Hashes (and which thus contributed > 1 to self._count)
 '''
 
 
@@ -175,10 +178,6 @@ class Hash():
         index = self._hash(key_string)
         prop = self._props[index]
 
-        # rehash if self._props is getting too full
-        if self._count / self._hash_size >= 0.6:
-            self._rehash()
-
         # case: None was at that index
         if prop is None:
             self._props[index] = [key_string, value]
@@ -203,6 +202,10 @@ class Hash():
                 self._props[index] = [current_resident]
                 self._props[index].append([key_string, value])
                 self._count += 1
+
+        # rehash if self._props is getting too full
+        if self._count / self._hash_size >= 0.6:
+            self._rehash()
 
     def __str__(self):
         '''Return string representation of hash object.'''

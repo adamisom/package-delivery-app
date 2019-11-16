@@ -1,3 +1,17 @@
+NEW Problems + Resolutions
+(1) I have nothing guaranteeing packages delivered on time. 
+But I figure I could do so. My current thought is to...
+ - track how many cumulative miles each deadline-pkg can be
+ - pass to improve_route and cut out 'improved's that
+ - assert or try/except improve_route's min, just in case some
+ deadline makes a route actually impossible (so min would be on [])
+TODO: I'll make a new Block 6 for this with 1-2 sub-blocks
+(2) Distance is unreasonable right now. It's extremely unlikely to be much less than 80 or 90, and maybe even 100. Partly (only partly) b/c I was testing both truck + deadline constraints together
+TODO: Come back to this later after blocks 4-6. New Block 7?
+
+LEFT OFF: route is built, BUT
+ - I still need to update main to loop until all delivered
+
 I complete this in a way I can take pride in, by Sat:
  -   Block 1 < R 3:55@libP 2h -ACTUAL: 4.0h
  	- SB 1.1 < 
@@ -7,7 +21,8 @@ I complete this in a way I can take pride in, by Sat:
  	- SB 2.1 < 
  	- SB 2.2 < 
  	- SB 2.3 < 
- -   Block 3 < F ?9:00@libM 1h
+ -   Block 3 < F 10:15@libM (1h)
+ 			  +F ?@B&N (?)
  	- SB 3.1 < 
  -   Block 4 < F ?12:30@B&N 2.5h
  	- SB 4.1 < 
@@ -18,18 +33,18 @@ I complete this in a way I can take pride in, by Sat:
  	- SB 5.2 < 
  	- SB 5.3 < 
  - WRITING Block 6 < 
- 	- SB 6.1 < SA 7:15@RoCo 1.5h
+ 	- SB 6.1 < SA ?7:15@RoCo 1.5h
  	Write as fast as possible
- 	- SB 6.2 < SA 9:00@RoCo 0.75h
+ 	- SB 6.2 < SA ?9:00@RoCo 0.75h
  	Clean up writing & Submit writing+code
  - PRESENTATION B7 < 
- 	- SB 7.1 < SA 10:00@RoCo 1h
+ 	- SB 7.1 < SA ?10:00@RoCo 1h
  	Add requirements + my features to readme
- 	- SB 7.2 < SA 11:15@RoCo 0.5h 
- 	Comb code for professionalism + pin repo
+ 	- SB 7.2 < SA ?11:15@RoCo 0.5h 
+ 	Comb code for professionalism, test docstrings + pin repo
  - UNIT TESTS Blk8 < 
- 	- SB 8.1 < SA 12:00@RoCo 1.75h
- 	Add some tests.
+ 	- SB 8.1 < SA ?12:00@RoCo 1.75h
+ 	Add some tests and do any last to-dos.
 Initial estimate: 15h
 Now on track for: 17h
 Actual time spent: ?h
@@ -48,6 +63,17 @@ DONE:
 
 # check if size ok and if not eject d-w in reverse size-order until ok
 # _  TEST: alter data so size exceeded and know+check expected result
+
+# BLOCK 2 (2 TEST blocks, retroactively):
+# add truck constraints to temp list
+# check if full, if so, randomly eject right # to be full
+# add deliver-withs not in there yet to temp list
+# X  TEST: (1) truck (alter in main) (2) d-ws added (alter in load)
+
+# check if size ok and if not, eject d-w in reverse size-order until ok
+# if room left smaller than avail - sum(d-w's), remove d-ws from ready,
+# else add d-ws until no more groups can fit
+# X  TEST: set up many d-ws, then test groups added until can't fit
 
 ----from How to Design Programs / HtDP
 TOP TIPS

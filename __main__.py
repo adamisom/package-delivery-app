@@ -12,6 +12,12 @@ from .tests.general import test
 
 def all_packages_delivered(packages):
     '''Return whether all packages are delivered.'''
+    # TEMPORARY
+    # delivered = '\n'.join([str(pkg) + '\n' + pkg.display_history()
+    #                        for pkg in packages
+    #                        if pkg.props['state'].name == 'DELIVERED'])
+    # print(f'DELIVERED: {delivered}')
+
     return all([pkg.props['state'].name == 'DELIVERED'
                 for pkg in packages])
 
@@ -83,7 +89,7 @@ def run_program(distance_csv, package_csv):
 
     for truck in trucks:
         # TEMPORARY TEST STUFF BELOW
-        if truck.props['ID'] != 2:  # WHILE TESTING, switch this between 1 / 2
+        if truck.props['ID'] != 1:  # WHILE TESTING, switch this between 1 / 2
             continue
         for pkg in packages:
             pass
@@ -111,7 +117,7 @@ def run_program(distance_csv, package_csv):
         truck.deliver(route)
 
     count = 0
-    while not all_packages_delivered(packages) and count < 5:
+    while count < 1 and not all_packages_delivered(packages):
         count += 1
 
     total_distance = sum([truck.props['mileage_for_day']

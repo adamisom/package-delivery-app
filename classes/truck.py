@@ -41,20 +41,17 @@ class Truck():
     def update_corrected_packages(self, all_packages, destination_corrections):
         '''Update all packages that had a known wrong-destination at start of day
         but which have now been corrected, i.e., which can now be delivered.'''
-        wrong_destinations = [pkg for pkg in all_packages
-                              if pkg.props['special_note']['wrong_destination']
-                              is True]
+        wrong_destinations = [p for p in all_packages
+                              if p.props['state'].name == 'WRONG_DESTINATION']
 
         for pkg in wrong_destinations:
-            index = [correction.id for correction in
-                     destination_corrections].index(pkg.props['ID'])
+            if pkg.props['ID'] in [c.pkg_id for c in destination_corrections]:
+                updated_destination, = [c for c in destination_corrections
+                                        if c.pkg_id == pkg.props['ID']]
 
-            updated_destination = destination_corrections[index]
-
-            if updated_destination.location is not None:
-                pkg.update_package_destination(updated_destination)
-
-                if pkg.props['state'].name == 'WRONG_DESTINATION':  # need if?
+                if updated_destination is not None:
+                    pkg.update_package_destination(
+                        updated_destination.location)
                     pkg.update_wrong_destination_as_corrected()
 
     def get_available_packages(self, all_packages, destination_corrections):
@@ -74,10 +71,6 @@ class Truck():
     def load(self, pkg_load):
         '''Load truck with packages.'''
         self.props['packages'] = pkg_load
-
-        # # TEMPORARY
-        # pkgs = '\n'.join([str(p) for p in self.props['packages']])
-        # print(f"Packages loaded onto truck: {pkgs}")
 
     def get_mileage_for_day(self):
         '''Find and return actual mileage truck has traveled today.

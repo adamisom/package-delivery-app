@@ -9,41 +9,24 @@ TODO: I'll make a new Block 6 for this with 1-2 sub-blocks
 (2) Distance is unreasonable right now. It's extremely unlikely to be much less than 80 or 90, and maybe even 100. Partly (only partly) b/c I was testing both truck + deadline constraints together
 It's actually so much worse than I thought-72 miles for first 16. It's also somehow 155 miles for 29 packages--BAD.
 TODO: Come back to this later after blocks 4-6. New Block 7?
-(3) Pkgs 6, 9, 25, 28, 32 do not get delivered even if main while loops. Pkg 9 is because I forgot to account for my destination-correction code needing to work and be tested--oops. The other four are late arrivals not being handled--oops.
-TODO: add new Subblocks to Block 3 to get these taken care of.
 
-I complete this in a way I can take pride in, by Sat:
- -   Block 1 < R 3:55@libP 2h -ACTUAL: 4.0h
- 	- SB 1.1 < 
- 	- SB 1.2 < 
- 	- SB 1.3 < 
- -   Block 2 < F 8:45@libM 1.5h
- 	- SB 2.1 < 
- 	- SB 2.2 < 
- 	- SB 2.3 < 
- -   Block 3 < F 10:15@libM (1h)
- 			  +F ?@B&N (?)
- 	- SB 3.1 < 
- -   Block 4 < F ?12:30@B&N 2.5h
- 	- SB 4.1 < 
-  	- SB 4.2 < 
- -   Block 5 < F ?3:30@B&N (0.5)
- 			 + F ?5:00@B&N (+2=2.5h)
- 	- SB 5.1 < 
- 	- SB 5.2 < 
- 	- SB 5.3 < 
- - WRITING Block 6 < 
- 	- SB 6.1 < SA ?7:15@RoCo 1.5h
+LEFT OFF: finishing dest-correction code.
+For some reason just as I was about to leave it stopped working in that 39/40 are delivered, not 40. Was so close!
+About ready to move on to Block 4!
+
+AFTER coding blocks:
+ - WRITING Block N+1 < 
+ 	- SB 6.1 < ? ?7:15@RoCo 1.5h
  	Write as fast as possible
- 	- SB 6.2 < SA ?9:00@RoCo 0.75h
+ 	- SB 6.2 < ? ?9:00@RoCo 0.75h
  	Clean up writing & Submit writing+code
- - PRESENTATION B7 < 
- 	- SB 7.1 < SA ?10:00@RoCo 1h
+ - PRESENTATION N+2 < 
+ 	- SB 7.1 < ? ?10:00@RoCo 1h
  	Add requirements + my features to readme
- 	- SB 7.2 < SA ?11:15@RoCo 0.5h 
+ 	- SB 7.2 < ? ?11:15@RoCo 0.5h 
  	Comb code for professionalism, test docstrings + pin repo
- - UNIT TESTS Blk8 < 
- 	- SB 8.1 < SA ?12:00@RoCo 1.75h
+ - UNIT TESTS N+3 < 
+ 	- SB 8.1 < ? ?12:00@RoCo 1.75h
  	Add some tests and do any last to-dos.
 Initial estimate: 15h
 Now on track for: 17h
@@ -75,6 +58,16 @@ DONE:
 # else add d-ws until no more groups can fit
 # X  TEST: set up many d-ws, then test groups added until can't fit
 
+# BLOCK 3 (3 TEST blocks, 2 retroactively added):
+# 3.1 create route order from those packages' stops: just use NN,
+# X  TEST: route note messed up/order/distances are reasonable
+
+# 3.2 make sure destination-correction code works
+# X  TEST: user can supply dest. corr. code, plus one manually added
+
+# 3.3 plus (NEWLY ADDED) make sure main..
+# X  TEST: main loops until all packages are delivered
+        
 ----from How to Design Programs / HtDP
 TOP TIPS
 	1. Keep a wish list around and as long as it's not empty, work from it

@@ -315,19 +315,6 @@ class RouteBuilder():
 
         # print('\nBEFORE looping to fill # of packages')
         # self.display_route()
-
-        # BLOCK 3 (4 TEST blocks, 3 retroactively added):
-        # 3.1 create route order from those packages' stops: just use NN,
-        # X  TEST: route note messed up/order/distances are reasonable
-
-        # 3.2 make sure destination-correction code works
-        # _  TEST: ??
-
-        # 3.3 get my late-arrival code to work
-        # _  TEST: ??
-
-        # 3.4 plus (NEWLY ADDED) make sure main..
-        # _  TEST: main loops until all packages are delivered
         dummy = 0  # while loop below is for BLOCK 4 and only Block 4
         while (len(self.get_packages()) < self.max_load and
                len(self.packages_left()) > 0 and dummy < 100):
@@ -349,7 +336,7 @@ class RouteBuilder():
             new_pkgs = old_pkgs[diff:]  # exclude indices 0 to diff-1
             self.route[-1] = self.route[-1]._replace(pkgs=new_pkgs)
 
-        self.display_route()
+        # self.display_route()
 
         # BLOCK 4 (2 TEST blocks):
         #    V.    Look for nearby neighbors between each stop-pair on route

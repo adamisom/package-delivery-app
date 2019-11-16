@@ -16,7 +16,7 @@ def all_packages_delivered(packages):
     delivered = '\n'.join([str(pkg) + '\n' + pkg.display_history()
                            for pkg in packages
                            if pkg.props['state'].name == 'DELIVERED'])
-    print(f'DELIVERED: {delivered}')
+    # print(f'DELIVERED: {delivered}')
 
     return all([pkg.props['state'].name == 'DELIVERED'
                 for pkg in packages])
@@ -75,6 +75,10 @@ def run_program(distance_csv, package_csv):
 
     # display_distances(distances)
 
+    # Note: one destination-correction is hardcoded so that I don't have to
+    # enter it each time I run this program. The assignment that this program
+    # was built for specified this destination-correction as known in advance.
+    # If you use this code you will probably want to remove it (cli.py ln ~300)
     Destination_Corrections = get_destination_corrections_from_user(Locations)
 
     number_of_trucks = 3
@@ -95,6 +99,8 @@ def run_program(distance_csv, package_csv):
                 # pkg.props['special_note']['truck_number'] = 2  # TEMP / TST
                 # if pkg.props['ID'] != 15:
                 #     pkg.props['deadline'] = Time_Custom(10, 30, 00)
+
+            print(f'\nDestination_Corrections: {Destination_Corrections}')
 
             packages_ready = truck.get_available_packages(
                 packages, Destination_Corrections)

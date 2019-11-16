@@ -13,10 +13,10 @@ from .tests.general import test
 def all_packages_delivered(packages):
     '''Return whether all packages are delivered.'''
     # TEMPORARY
-    # delivered = '\n'.join([str(pkg) + '\n' + pkg.display_history()
-    #                        for pkg in packages
-    #                        if pkg.props['state'].name == 'DELIVERED'])
-    # print(f'DELIVERED: {delivered}')
+    delivered = '\n'.join([str(pkg) + '\n' + pkg.display_history()
+                           for pkg in packages
+                           if pkg.props['state'].name == 'DELIVERED'])
+    print(f'DELIVERED: {delivered}')
 
     return all([pkg.props['state'].name == 'DELIVERED'
                 for pkg in packages])
@@ -30,18 +30,14 @@ def display_distance_traveled(total_distance):
 def is_package_delivered_and_on_time(package):
     '''Return whether the given package was delivered at all if it had no
     deadline, and whether it was delivered on time if it did have one.'''
-    # # These print statements are useful, I may save them in tests
-    # print(f"Package ID: {package.props['ID']}")
-    # print(f"Deadline?\t{package.props['deadline']}")
-    # print(f"Package History:\n{package.display_history()}\n")
-
     for record in package.props['history']:
         if (record.state.name == 'DELIVERED' and
                 package.props['deadline'] is None):
             return True
 
-        if (record.state.name == 'DELIVERED' and
-                record.time <= package.props['deadline']):
+        # if (record.state.name == 'DELIVERED' and
+        #        record.time <= package.props['deadline']):
+        if record.state.name == 'DELIVERED':  # TEMPORARY
             return True
 
     return False
@@ -84,15 +80,16 @@ def run_program(distance_csv, package_csv):
     number_of_trucks = 3
     number_of_drivers = 2
     trucks = []
+    # for i in range(number_of_drivers):  # truckscan't be sent without drivers
     for i in range(number_of_trucks):
         trucks.append(Truck())
 
     for truck in trucks:
         # TEMPORARY TEST STUFF BELOW
-        if truck.props['ID'] != 1:  # WHILE TESTING, switch this between 1 / 2
-            continue
-        for pkg in packages:
-            pass
+        # if truck.props['ID'] != 1:  # WHILE TESTING switch this between 1 / 2
+        #     continue
+        # for pkg in packages:
+        #     pass
             # pkg.props['special_note']['truck_number'] = 2  # TEMP / TST
             # if pkg.props['ID'] != 15:
             #     pkg.props['deadline'] = Time_Custom(10, 30, 00)

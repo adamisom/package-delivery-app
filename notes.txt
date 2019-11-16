@@ -7,10 +7,12 @@ But I figure I could do so. My current thought is to...
  deadline makes a route actually impossible (so min would be on [])
 TODO: I'll make a new Block 6 for this with 1-2 sub-blocks
 (2) Distance is unreasonable right now. It's extremely unlikely to be much less than 80 or 90, and maybe even 100. Partly (only partly) b/c I was testing both truck + deadline constraints together
+It's actually so much worse than I thought-72 miles for first 16. It's also somehow 155 miles for 29 packages--BAD.
 TODO: Come back to this later after blocks 4-6. New Block 7?
+(3) Pkgs 6, 9, 25, 28, 32 do not get delivered even if main while loops. Pkg 9 is because I forgot to account for my destination-correction code needing to work and be tested--oops. The other four are late arrivals not being handled--oops.
+TODO: add new Subblocks to Block 3 to get these taken care of.
 
-LEFT OFF: route is built, BUT
- - I still need to update main to loop until all delivered
+LEFT OFF: ...
 
 I complete this in a way I can take pride in, by Sat:
  -   Block 1 < R 3:55@libP 2h -ACTUAL: 4.0h

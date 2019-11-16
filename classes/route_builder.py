@@ -4,6 +4,7 @@ from .route_helpers import improve_route
 from .time_custom import Time_Custom
 from .hash import Hash
 import pdb  # TEMPORARY
+import random  # TEMPORARY
 
 
 class RouteBuilder():
@@ -69,7 +70,7 @@ class RouteBuilder():
 
     def compute_dist(self):
         '''Return total distance of route.'''
-        return sum([stop.dist for stop in self.route])
+        return round(sum([stop.dist for stop in self.route]), 2)
 
     def display_packages(self, pkgs):
         '''TEMPORARY function to pretty-print list of packages passed in.'''
@@ -171,6 +172,10 @@ class RouteBuilder():
                         updated.remove(pkg)
         return updated
 
+    def packages_left(self):
+        '''Return list of packages ready to go not already in route.'''
+        return list(set(self.ready_pkgs) - set(self.get_packages()))
+
     def unvisited_with_packages(self):
         '''Return list of unvisited locations with ready unpicked packages.'''
         stops_with_pkgs = list(set([
@@ -179,10 +184,6 @@ class RouteBuilder():
         return [loc_num for loc_num in self.distances[0][2:]
                 if loc_num in stops_with_pkgs and
                 loc_num not in self.get_locations()]
-
-    def packages_left(self):
-        '''Return list of packages ready to go not already in route.'''
-        return list(set(self.ready_pkgs) - set(self.get_packages()))
 
     def find_nearest(self, Stop, location_list=None):
         '''Return nearest neighbor-with-packages to Stop passed in.'''
@@ -312,22 +313,47 @@ class RouteBuilder():
                 nearest.loc, nearest.dist, pkgs_for_stop))
             locs.remove(nearest.loc)
 
-        self.display_route()
+        # print('\nBEFORE looping to fill # of packages')
+        # self.display_route()
 
-        # BLOCK 3 (2 TEST blocks, one retroactively added):
-        # create route order from those packages' stops: just use NN,
+        # BLOCK 3 (4 TEST blocks, 3 retroactively added):
+        # 3.1 create route order from those packages' stops: just use NN,
         # X  TEST: route note messed up/order/distances are reasonable
 
-        # plus (NEWLY ADDED) make sure main..
+        # 3.2 make sure destination-correction code works
+        # _  TEST: ??
+
+        # 3.3 get my late-arrival code to work
+        # _  TEST: ??
+
+        # 3.4 plus (NEWLY ADDED) make sure main..
         # _  TEST: main loops until all packages are delivered
+        dummy = 0  # while loop below is for BLOCK 4 and only Block 4
+        while (len(self.get_packages()) < self.max_load and
+               len(self.packages_left()) > 0 and dummy < 100):
+            dummy += 1
+
+            # DUMMY CODE for 3.2
+            next_stop = random.choice(self.unvisited_with_packages())
+            dist_from_last = self.distances[self.route[-1].loc][next_stop]
+            pkgs_there = [pkg for pkg in self.packages_left()
+                          if pkg.props['location'].num == next_stop]
+
+            self.route.append(RouteBuilder.Stop(
+                next_stop, dist_from_last, pkgs_there))
+
+        # remove packages from last stop if max_load is exceeded
+        diff = len(self.get_packages()) - self.max_load
+        if diff > 0:  # btw, due to the while, diff should only be 0 or > 0
+            old_pkgs = self.route[-1].pkgs
+            new_pkgs = old_pkgs[diff:]  # exclude indices 0 to diff-1
+            self.route[-1] = self.route[-1]._replace(pkgs=new_pkgs)
+
+        self.display_route()
 
         # BLOCK 4 (2 TEST blocks):
         #    V.    Look for nearby neighbors between each stop-pair on route
         #    VI.   Add more stops near the end of the route (if not max_load)
-        dummy = 0  # while loop below is for BLOCK 4 and only Block 4
-        while len(self.get_packages()) < self.max_load and dummy < 100:
-
-            dummy += 1
 
         # (4.1) look for nearby neighbors
         # _  TEST: nearbys are added, route/stops still good, overall dist ok

@@ -294,14 +294,23 @@ class RouteBuilder():
         pkgs_to_load = self.forbid_overfilling_load(pkgs_to_load, more_to_load)
         pkgs_to_load = self.forbid_partial_deliver_groups(groups, pkgs_to_load)
 
-        #    III.  Add other deliver-with groups that will fit, smallest-first.
-        # The idea here is to get them out of the way as soon as possible.
-        # Note: it is likely the first route will be longer than the second, as
-        # it is mostly driven by package constraints, not nearest-neighbors.
+        #    III.  Add other deliver-with groups that will fit, smallest-first,
+        # and remove packages in remaining groups from consideration.
+        # The idea for the first part of that is to get deliver-with packages
+        # out of the way as soon as possible, and the idea for the second part
+        # is to not have to worry about partial groups again while route-
+        # building.
+        # NOTE: it is likely the first route of the day will be longer than
+        # successive trips, as it is mostly driven by package constraints,
+        # rather than nearest-neighbors / distance.
         for group in groups:  # deliver-with method sorted them smallest-first
             new_list = list(set(pkgs_to_load).union(set(group)))
             if len(new_list) <= self.max_load:
                 pkgs_to_load = new_list
+                groups.remove(group)
+
+        delivwith_pkgs_left = [pkg for group in groups for pkg in group]
+        self.ready_pkgs = list(set(self.ready_pkgs) - set(delivwith_pkgs_left))
 
         #    IV.   Construct stops from pkgs_to_load and add to route.
         locs = list(set([pkg.props['location'].num for pkg in pkgs_to_load]))
@@ -317,6 +326,7 @@ class RouteBuilder():
         #    V.    Look for nearby neighbors between each stop-pair on route
         # (4.1) look for nearby neighbors
         # _  TEST: nearbys are added, route/stops still good, overall dist ok
+        # add_nearby_neighbors()
 
         #    VI.   Add more stops near the end of the route (if not max_load)
         # (4.2) add more at end

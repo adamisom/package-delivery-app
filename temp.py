@@ -34,7 +34,7 @@ print_ = '\n*\n'.join(['\n'.join([str(p) for p in g]) for g in groups])
 print(f'DELIVER-WITH GROUPS: {print_}\n')
 for group in groups:
     new_list = list(set(pkgs_to_load).union(set(group)))
-    if len(new_list) <= self.max_load:
+if len(new_list) <= self.max_load:
         pkgs_to_load += group
 self.display_route()
 (*) to view deliver-with groups

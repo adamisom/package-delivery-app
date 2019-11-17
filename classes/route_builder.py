@@ -381,17 +381,24 @@ class RouteBuilder():
             self.route.append(RouteBuilder.Stop(
                 nearest.loc, nearest.dist, at_this_stop))
 
-        # TEMPORARY
-        # self.display_route()
-
         # BLOCK 5 (3 TEST blocks):
         #    VII.  Re-order stops on route to get shorter total distance
+        # _  TEST: route is actually optimized, dists are updated and correct
+        # _  TEST: trace what is going on at every step of optimize and verify
+        # self.route = improve_route(self.route, self.distances,
+        #                            RouteBuilder.Stop)
+        curr = self.route
+        temp = improve_route(self.route, self.distances,
+                             RouteBuilder.Stop)
+        self.route = temp
+        print(f'Route after improve_route would be:')
+        self.display_route()
+        self.route = curr
+        print(f'Whereas otherwise it is:')
+        self.display_route()
+
         #    VIII. Convert each Stop in route into a StopPlus
         # optimize and convert
-        # _  TEST: route is actually optimized, dists are updated and correct
-
-        # _  TEST: trace what is going on at every step of optimize and verify
-
         # _  TEST: (1) stopplus works/check main (2) test diff nearby #s
         ############################
         # cool stuff above this line

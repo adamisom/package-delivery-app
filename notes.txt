@@ -10,10 +10,6 @@ TODO: I'll make a new Block 6 for this with 1-2 sub-blocks
 It's actually so much worse than I thought-72 miles for first 16. It's also somehow 155 miles for 29 packages--BAD.
 TODO: Come back to this later after blocks 4-6. New Block 7?
 
-LEFT OFF: finishing dest-correction code.
-For some reason just as I was about to leave it stopped working in that 39/40 are delivered, not 40. Was so close!
-About ready to move on to Block 4!
-
 AFTER coding blocks:
  - WRITING Block N+1 < 
  	- SB 6.1 < ? ?7:15@RoCo 1.5h
@@ -67,7 +63,7 @@ DONE:
 
 # 3.3 plus (NEWLY ADDED) make sure main..
 # X  TEST: main loops until all packages are delivered
-        
+
 ----from How to Design Programs / HtDP
 TOP TIPS
 	1. Keep a wish list around and as long as it's not empty, work from it

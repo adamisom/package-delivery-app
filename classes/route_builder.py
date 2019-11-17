@@ -176,8 +176,9 @@ class RouteBuilder():
         '''Return list of packages ready to go not already in route.'''
         return list(set(self.ready_pkgs) - set(self.get_packages()))
 
-    def unvisited_with_packages(self):
-        '''Return list of unvisited locations with ready unpicked packages.'''
+    def unvisited_stops_with_packages(self):
+        '''Return list of unvisited locations at which at least one ready,
+        unpicked package needs to be dropped off.'''
         stops_with_pkgs = list(set([
             pkg.props['location'].num for pkg in self.packages_left()]))
         # start at 2 because col 0 isn't distance data, and col 1 is the hub
@@ -192,7 +193,7 @@ class RouteBuilder():
     #     '''Return nearest neighbor to location-number passed in.'''
     #     starting_from = zip(self.distances[0], self.distances[location_num])
         eligible_location_nums = (location_list if location_list
-                                  else self.unvisited_with_packages())
+                                  else self.unvisited_stops_with_packages())
         eligible_neighbors = [RouteBuilder.Neighbor(loc_num, dist)
                               for (loc_num, dist) in starting_from
                               if loc_num in eligible_location_nums]
@@ -247,6 +248,39 @@ class RouteBuilder():
         # key=lambda p: p.props['ID'])])
         print('\nALL ready packages\' locations:', pkgs)
         print('-' * 79)
+
+    def add_nearby_neighbors(self, acceptable_increase):
+        ''' TEMPORARY + HIGHLY QUESTIONABLE if worth it; see below:
+        # WOW, this only subtracts 0.3 miles for the first route
+        # it goes from 107.7 to 104.7. It's POSSIBLE it helps more for
+        # optimize_route is called. I'll find out if it does--and if it
+        # doesn't, I'll cut it and document why.
+        '''
+        route_copy = self.route[:]
+        for index, stop in enumerate(self.route):
+            if len(self.get_packages()) == self.max_load:
+                break
+            if len(self.unvisited_stops_with_packages()) == 0:
+                break
+            if stop == self.route[-1]:
+                break
+
+            nearest = self.find_nearest(stop)
+            cur_next = self.route[index + 1]
+            distance_with_nearest = (self.distances[stop.loc][nearest.loc] +
+                                     self.distances[nearest.loc][cur_next.loc])
+
+            if distance_with_nearest <= acceptable_increase * cur_next.dist:
+                for_here = [pkg for pkg in self.packages_left()
+                            if pkg.props['location'].num == nearest.loc]
+                excess_removed = self.forbid_overfilling_load(
+                    self.get_packages(), for_here)
+                for_here = list(set(excess_removed) - set(self.get_packages()))
+
+                route_copy.insert(index + 1, (RouteBuilder.Stop(
+                    nearest.loc, nearest.dist, for_here)))
+
+        return route_copy
 
     def build_route(self):
         '''Return a delivery route (list of stops).
@@ -325,8 +359,10 @@ class RouteBuilder():
         # BLOCK 4 (2 TEST blocks):
         #    V.    Look for nearby neighbors between each stop-pair on route
         # (4.1) look for nearby neighbors
-        # _  TEST: nearbys are added, route/stops still good, overall dist ok
-        # add_nearby_neighbors()
+        # X  TEST: nearbys are added, route/stops still good, overall dist ok
+        # Questionable if worth it; SEE ADD_NEARBY_NEIGHBORS DOCSTRING.
+        acceptable_increase = 1.75  # arbitrary-ish
+        self.route = self.add_nearby_neighbors(acceptable_increase)
 
         #    VI.   Add more stops near the end of the route (if not max_load)
         # (4.2) add more at end

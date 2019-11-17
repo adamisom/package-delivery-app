@@ -313,40 +313,30 @@ class RouteBuilder():
                 nearest.loc, nearest.dist, pkgs_for_stop))
             locs.remove(nearest.loc)
 
-        # print('\nBEFORE looping to fill # of packages')
-        # self.display_route()
-        dummy = 0  # while loop below is for BLOCK 4 and only Block 4
-        while (len(self.get_packages()) < self.max_load and
-               len(self.packages_left()) > 0 and dummy < 100):
-            dummy += 1
-
-            # DUMMY CODE for 3.2
-            next_stop = random.choice(self.unvisited_with_packages())
-            dist_from_last = self.distances[self.route[-1].loc][next_stop]
-            pkgs_there = [pkg for pkg in self.packages_left()
-                          if pkg.props['location'].num == next_stop]
-
-            self.route.append(RouteBuilder.Stop(
-                next_stop, dist_from_last, pkgs_there))
-
-        # remove packages from last stop if max_load is exceeded
-        diff = len(self.get_packages()) - self.max_load
-        if diff > 0:  # btw, due to the while, diff should only be 0 or > 0
-            old_pkgs = self.route[-1].pkgs
-            new_pkgs = old_pkgs[diff:]  # exclude indices 0 to diff-1
-            self.route[-1] = self.route[-1]._replace(pkgs=new_pkgs)
-
-        # self.display_route()
-
         # BLOCK 4 (2 TEST blocks):
         #    V.    Look for nearby neighbors between each stop-pair on route
-        #    VI.   Add more stops near the end of the route (if not max_load)
-
         # (4.1) look for nearby neighbors
         # _  TEST: nearbys are added, route/stops still good, overall dist ok
 
+        #    VI.   Add more stops near the end of the route (if not max_load)
         # (4.2) add more at end
-        # _  TEST: route extended, stops still good, overall dist ok
+        # NOTE: it's 107.7 miles BEFORE adding nearby and IS 100% deterministic
+        # X TEST: route extended, stops still good, overall dist ok
+        while (len(self.get_packages()) < self.max_load and
+               len(self.packages_left()) > 0):
+
+            nearest = self.find_nearest(self.route[-1])
+
+            more = [pkg for pkg in self.packages_left()
+                    if pkg.props['location'].num == nearest.loc]
+            all_pkgs = self.forbid_overfilling_load(self.get_packages(), more)
+            at_this_stop = list(set(all_pkgs) - set(self.get_packages()))
+
+            self.route.append(RouteBuilder.Stop(
+                nearest.loc, nearest.dist, at_this_stop))
+
+        # TEMPORARY
+        # self.display_route()
 
         # BLOCK 5 (3 TEST blocks):
         #    VII.  Re-order stops on route to get shorter total distance

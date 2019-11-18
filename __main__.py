@@ -21,6 +21,9 @@ def all_packages_delivered(packages):
     return all([pkg.props['state'].name == 'DELIVERED'
                 for pkg in packages])
 
+def display_when_packages_were_delivered():
+    '''TODO: put lines 15-18 of this file into this function, here.'''
+    pass
 
 def display_distance_traveled(total_distance):
     '''Display distance (in miles) traveled to deliver all packages.'''
@@ -95,7 +98,9 @@ def run_program(distance_csv, package_csv):
                 ['initial_leave_time', Truck.first_delivery_time])
             route_builder = RouteBuilder(route_parameters)
 
-            print(f"From main, building route for truck {truck.props['ID']}\n")
+            # TEMPORARY
+            # print(f"From main, building route for truck {truck.props['ID']}\n")
+
             route = route_builder.build_route()
 
             truck.load(route_builder.get_packages())

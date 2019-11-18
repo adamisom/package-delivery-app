@@ -75,24 +75,6 @@ class RouteBuilder():
               f'to go location #{stop.loc}, which is {stop.dist} miles from '
               f'the last stop, and has these packages:{pkgs}')
 
-    # def route_to_file(self, filename):
-    #     '''TEMPORARY, display_route but to a file.'''
-    #     with open(filename, 'w') as f:
-    #         print(f'ROUTE is {self.compute_dist()}mi, with stops', file=f)
-    #         for stop in self.route:
-    #             pkgs = ''.join(
-    #                 [f"\n\tPkg {str(p.props['ID']).rjust(2)}, to go to location "
-    #                  f"{p.props['location'].num} /\t{p.props['location'].address}"
-    #                  for p in sorted(stop.pkgs, key=lambda p: p.props['ID'])])
-    #             overall = (f'This Stop is number {self.route.index(stop)+1} on the route, '
-    #                        f'to go location #{stop.loc}, which is {stop.dist} miles from '
-    #                        f'the last stop, and has these packages:{pkgs}')
-    #             print(overall, file=f)
-    #         print(f'Load has {len(self.get_packages())} pkgs:', file=f)
-    #         for pkg in self.get_packages():
-    #             print(str(pkg), file=f)
-    #         print('-' * 79, file=f)
-
     def display_route(self, called_by=''):
         '''Display route.'''
         print(f'{called_by}/ ROUTE is {self.compute_dist()}mi, with stops:')
@@ -381,16 +363,7 @@ class RouteBuilder():
         # now doesn't itself guarantee deadlines will be missed--that's a nice
         # double-duty that improve_route is doing for us. Natural place, b/c ..
         self.add_final_stop()
-        # curr = self.route
-        # temp = improve_route(self.route, self.distances,
-                             # RouteBuilder.Stop)
-        # self.route = temp
-        # print(f'Route after improve_route would be:')
-        # self.route_to_file('with_improve.txt')
-        # print(f'Whereas otherwise it is:')
-        # self.route_to_file('without_improve.txt')
-        # self.display_route()
-        # print(f'\n')
+
         stop_deadlines = [(stop.loc, self.get_earliest_deadline_for_stop(stop))
                           for stop in self.route]
         stop_deadlines = [sd for sd in stop_deadlines if sd[1]]  # remove Nones

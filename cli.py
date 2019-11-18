@@ -1,4 +1,5 @@
 import re
+import pdb  # temporary
 from collections import namedtuple
 from .classes.time_custom import Time_Custom
 from .classes.package import Package
@@ -72,20 +73,22 @@ def package_status_at_time(package, time_custom):
         return package.props['history'][0].state
     if len(package.props['history']) == 1:
         return package.props['history'][0].state
+    # case: package had at least one History_Record after time_custom
     for index, record in enumerate(package.props['history']):
         if record.time > time_custom:
             # go back one record
             return package.props['history'][index - 1].state
+    # case: package no History_Records after time_custom
+    return package.props['history'][-1].state
 
 
 def package_snapshot(package, time_custom):
     '''Display historical status of a given package at a given time.'''
     package_str = str(package)
-    # remove current delivery state of package
+    # do not include current delivery-state of package in snapshot string
     cut_start = package_str.index('delivery status')
     cut_end = package_str.index('destination')
     print(package_str[0:cut_start] + package_str[cut_end:])
-
     status = package_status_at_time(package, time_custom).name
     print(f'\tFinally, delivery status at {time_custom} was {status}')
 

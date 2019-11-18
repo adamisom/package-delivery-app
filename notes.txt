@@ -1,3 +1,8 @@
+How else I would improve the program
+- optimize route could be enhanced to consider sets of segments that are shortest, which is another 'level' and thus should be another function. a clever way to manage O(n!) by splitting m up twice--could even extend again!
+- adding nearby neighbors and adding stops at the end could revisit locations if it woudl save time. right now they both depend on find_nearest's implementation ignoring previously-visited packages. I know for a fact this would reduce the time I was getting from (93.9-chagne later) to (90.0-change later)
+- 
+
 NEW Problems + Resolutions
 (1) I have nothing guaranteeing packages delivered on time. 
 But I figure I could do so. My current thought is to...

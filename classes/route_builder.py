@@ -4,8 +4,6 @@ from .route_helpers import improve_route
 from .time_custom import Time_Custom
 from .hash import Hash
 import pdb  # TEMPORARY
-import random  # TEMPORARY
-# import csv  # TEMPORARY
 
 
 class RouteBuilder():
@@ -45,22 +43,6 @@ class RouteBuilder():
 
         self.route = []
 
-    def sort_by_hub_closeness(self, pkgs=None):
-        '''Iffy on whether I'll keep this function--truck/deadline use it.'''
-        return sorted(
-            pkgs if pkgs else self.get_packages(),
-            key=lambda pkg: self.distances[1][pkg.props['location'].num])
-
-    def display_hub_closeness(self):
-        '''TEMPORARY function to test sort_by_hub_closeness is being used.'''
-        sorted_pkgs = self.sort_by_hub_closeness()
-        pkgs = '\n\t'.join(
-            [f"Pkg {str(pkg.props['ID']).ljust(2)} loc "
-             f"{str(pkg.props['location'].num).ljust(2)} "
-             f"is {self.distances[1][pkg.props['location'].num]} miles "
-             'from the hub' for pkg in sorted_pkgs])
-        print(f'\nPackages in order of closeness to hub: \n\t{pkgs}\n')
-
     def get_locations(self):
         '''Return list of location-numbers/locations currently in route.'''
         return [stop.loc for stop in self.route]
@@ -69,12 +51,18 @@ class RouteBuilder():
         '''Return list of all packages currently in route.'''
         return [pkg for stop in self.route for pkg in stop.pkgs]
 
+    def sort_by_hub_closeness(self, pkgs=None):
+        '''Return packages sorted by closeness to hub.'''
+        return sorted(
+            pkgs if pkgs else self.get_packages(),
+            key=lambda pkg: self.distances[1][pkg.props['location'].num])
+
     def compute_dist(self):
         '''Return total distance of route.'''
         return round(sum([stop.dist for stop in self.route]), 2)
 
     def display_packages(self, pkgs):
-        '''TEMPORARY function to pretty-print list of packages passed in.'''
+        '''Pretty-print list of packages passed in.'''
         print('\n'.join([str(pkg) for pkg in pkgs]))
 
     def display_stop(self, stop):
@@ -87,23 +75,23 @@ class RouteBuilder():
               f'to go location #{stop.loc}, which is {stop.dist} miles from '
               f'the last stop, and has these packages:{pkgs}')
 
-    def route_to_file(self, filename):
-        '''TEMPORARY, display_route but to a file.'''
-        with open(filename, 'w') as f:
-            print(f'ROUTE is {self.compute_dist()}mi, with stops', file=f)
-            for stop in self.route:
-                pkgs = ''.join(
-                    [f"\n\tPkg {str(p.props['ID']).rjust(2)}, to go to location "
-                     f"{p.props['location'].num} /\t{p.props['location'].address}"
-                     for p in sorted(stop.pkgs, key=lambda p: p.props['ID'])])
-                overall = (f'This Stop is number {self.route.index(stop)+1} on the route, '
-                           f'to go location #{stop.loc}, which is {stop.dist} miles from '
-                           f'the last stop, and has these packages:{pkgs}')
-                print(overall, file=f)
-            print(f'Load has {len(self.get_packages())} pkgs:', file=f)
-            for pkg in self.get_packages():
-                print(str(pkg), file=f)
-            print('-' * 79, file=f)
+    # def route_to_file(self, filename):
+    #     '''TEMPORARY, display_route but to a file.'''
+    #     with open(filename, 'w') as f:
+    #         print(f'ROUTE is {self.compute_dist()}mi, with stops', file=f)
+    #         for stop in self.route:
+    #             pkgs = ''.join(
+    #                 [f"\n\tPkg {str(p.props['ID']).rjust(2)}, to go to location "
+    #                  f"{p.props['location'].num} /\t{p.props['location'].address}"
+    #                  for p in sorted(stop.pkgs, key=lambda p: p.props['ID'])])
+    #             overall = (f'This Stop is number {self.route.index(stop)+1} on the route, '
+    #                        f'to go location #{stop.loc}, which is {stop.dist} miles from '
+    #                        f'the last stop, and has these packages:{pkgs}')
+    #             print(overall, file=f)
+    #         print(f'Load has {len(self.get_packages())} pkgs:', file=f)
+    #         for pkg in self.get_packages():
+    #             print(str(pkg), file=f)
+    #         print('-' * 79, file=f)
 
     def display_route(self, called_by=''):
         '''Display route.'''
@@ -208,9 +196,6 @@ class RouteBuilder():
     def find_nearest(self, Stop, location_list=None):
         '''Return nearest neighbor-with-packages to Stop passed in.'''
         starting_from = zip(self.distances[0], self.distances[Stop.loc])
-    # def find_nearest(self, location_num, location_list=None):
-    #     '''Return nearest neighbor to location-number passed in.'''
-    #     starting_from = zip(self.distances[0], self.distances[location_num])
         eligible_location_nums = (location_list if location_list
                                   else self.unvisited_stops_with_packages())
         eligible_neighbors = [RouteBuilder.Neighbor(loc_num, dist)
@@ -241,10 +226,7 @@ class RouteBuilder():
         avg_speed = self.speed_function(previous.loc, stop.loc)
         minutes = 60 * (stop.dist / avg_speed)
         projected_arrival = Time_Custom.clone(previous.arrival)
-        try:  # TODO: take out this try/except when I know my app works
-            projected_arrival.add_time(minutes)
-        except ValueError:
-            print(f'\n\tUH OH! Tried adding {minutes} minutes\n')
+        projected_arrival.add_time(minutes)
         return projected_arrival
 
     def convert_to_stopplus(self):
@@ -256,36 +238,34 @@ class RouteBuilder():
             self.route[index] = RouteBuilder.StopPlus(
                 Location, stop.dist, stop.pkgs, projected_arrival)
 
-    # TEMPORARY
-    def display_all_package_locations(self):
-
-        pkgs = ''.join(
-            [f"\n\tPkg {str(p.props['ID']).rjust(2)}, to go to location "
-             f"{p.props['location'].num} /\t{p.props['location'].address}"
-             for p in sorted(self.ready_pkgs,
-                             key=lambda p: p.props['location'].num)])
-        # key=lambda p: p.props['ID'])])
-        print('\nALL ready packages\' locations:', pkgs)
-        print('-' * 79)
+    # # TEMPORARY
+    # def display_all_package_locations(self):
+    #     pkgs = ''.join(
+    #         [f"\n\tPkg {str(p.props['ID']).rjust(2)}, to go to location "
+    #          f"{p.props['location'].num} /\t{p.props['location'].address}"
+    #          for p in sorted(self.ready_pkgs,
+    #                          key=lambda p: p.props['location'].num)])
+    #     # key=lambda p: p.props['ID'])])
+    #     print('\nALL ready packages\' locations:', pkgs)
+    #     print('-' * 79)
 
     def add_nearby_neighbors(self, acceptable_increase):
-        ''' TEMPORARY + HIGHLY QUESTIONABLE if worth it; see below:
-        # WOW, this only subtracts 0.3 miles for the first route
-        # it goes from 107.7 to 104.7. It's POSSIBLE it helps more for
-        # optimize_route is called. I'll find out if it does--and if it
-        # doesn't, I'll cut it and document why.
-        '''
-        route_copy = self.route[:]
-        for index, stop in enumerate(self.route):
-            if len(self.get_packages()) == self.max_load:
-                break
-            if len(self.unvisited_stops_with_packages()) == 0:
-                break
+        '''Add nearby neighbors found throughout the route-so-far if doing so
+        wouldn't increase distance much (determined by acceptable_increase).'''
+        stop_index = 0
+
+        while (len(self.get_packages()) < self.max_load and
+               len(self.unvisited_stops_with_packages()) > 0):
+
+            stop = self.route[stop_index]
             if stop == self.route[-1]:
                 break
 
             nearest = self.find_nearest(stop)
-            cur_next = self.route[index + 1]
+            cur_next = self.route[stop_index + 1]
+            if nearest == cur_next:
+                continue
+
             distance_with_nearest = (self.distances[stop.loc][nearest.loc] +
                                      self.distances[nearest.loc][cur_next.loc])
 
@@ -296,20 +276,15 @@ class RouteBuilder():
                     self.get_packages(), for_here)
                 for_here = list(set(excess_removed) - set(self.get_packages()))
 
-                route_copy.insert(index + 1, (RouteBuilder.Stop(
-                    nearest.loc, nearest.dist, for_here)))
+                if len(for_here) > 0:
+                    self.route.insert(stop_index + 1, (RouteBuilder.Stop(
+                        nearest.loc, nearest.dist, for_here)))
 
-        return route_copy
+            stop_index += 1
 
     def build_route(self):
         '''Return a delivery route (list of stops).
-        NOTES:
-            - POSSIBLE LOGIC BUG: anything that treats all stops as equal
-            when the hub (start and end) need to be treated differently.
-            - LOGIC AMBIGUITY/POSSIBLE BUG--noticed in unvisited_with_packages
-            stops_with_pkgs assumes pick up packages on way ALREADY HAPPENED
-            because if it didn't before this was called, this function would
-            select some "partially" visited locations
+        TEMPORARY NOTES:
             - How To:
                 (*) update a stop's packages, if need be:
                 stop = stop._replace(pkgs=new_list)
@@ -317,10 +292,10 @@ class RouteBuilder():
                 print('\nAFTER:'); self.display_packages(pkgs_to_load)
         '''
         if len(self.ready_pkgs) == 0:
-            return []  # empty route
+            return []
 
         # TEMPORARY
-        self.display_all_package_locations()
+        # self.display_all_package_locations()
 
         self.add_first_stop()
 
@@ -377,18 +352,12 @@ class RouteBuilder():
 
         # BLOCK 4 (2 TEST blocks):
         #    V.    Look for nearby neighbors between each stop-pair on route
-        # (4.1) look for nearby neighbors
-        # X  TEST: nearbys are added, route/stops still good, overall dist ok
-        # Questionable if worth it; SEE ADD_NEARBY_NEIGHBORS DOCSTRING.
-        acceptable_increase = 1.75  # arbitrary-ish
-        self.route = self.add_nearby_neighbors(acceptable_increase)
+        acceptable_increase = 1.72
+        self.add_nearby_neighbors(acceptable_increase)  #
 
         #    VI.   Add more stops near the end of the route (if not max_load)
-        # (4.2) add more at end
-        # NOTE: it's 107.7 miles BEFORE adding nearby and IS 100% deterministic
-        # X TEST: route extended, stops still good, overall dist ok
         while (len(self.get_packages()) < self.max_load and
-               len(self.packages_left()) > 0):
+               len(self.unvisited_stops_with_packages()) > 0):
 
             nearest = self.find_nearest(self.route[-1])
 
@@ -402,31 +371,21 @@ class RouteBuilder():
 
         # BLOCK 5 (3 TEST blocks):
         #    VII.  Re-order stops on route to get shorter total distance
-        # _  TEST: route is actually optimized, dists are updated and correct
-        # _  TEST: trace what is going on at every step of optimize and verify
-        # self.route = improve_route(self.route, self.distances,
-        #                            RouteBuilder.Stop)
         self.add_final_stop()
-
-        curr = self.route
-        temp = improve_route(self.route, self.distances,
-                             RouteBuilder.Stop)
-        self.route = temp
-        print(f'Route after improve_route would be:')
-        self.route_to_file('with_improve.txt')
-        self.display_route()
-        # self.route = curr
+        # curr = self.route
+        # temp = improve_route(self.route, self.distances,
+                             # RouteBuilder.Stop)
+        # self.route = temp
+        # print(f'Route after improve_route would be:')
+        # self.route_to_file('with_improve.txt')
         # print(f'Whereas otherwise it is:')
         # self.route_to_file('without_improve.txt')
         # self.display_route()
+        self.route = improve_route(self.route, self.distances,
+                                   RouteBuilder.Stop)
+        self.display_route()
 
         #    VIII. Convert each Stop in route into a StopPlus
-        # optimize and convert
-        # _  TEST: (1) stopplus works/check main (2) test diff nearby #s
-        ############################
-        # cool stuff above this line
-        # self.add_final_stop()  # must be done before next two statements
-        # # self.route = improve_route(self.route, self.distances,
-        # #                            RouteBuilder.Stop)
+        # X  TEST: (1) stopplus works/check main (2) test diff nearby #s
         self.convert_to_stopplus()
         return self.route

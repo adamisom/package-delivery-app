@@ -57,7 +57,7 @@ def improve_route(route, distances, Stop_namedtuple):
         new_orderings = list(permutations(route[index+1:end]))
 
         # a full subroute for distance calculation must include start and end
-        subroutes = [[route[index]] + list(ordering) + [route[end]]
+        subroutes = [[route[index], *ordering, route[end]]
                      for ordering in new_orderings]
 
         with_updated_distances = [update_subroute_distances(

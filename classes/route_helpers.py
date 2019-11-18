@@ -1,5 +1,4 @@
 from itertools import permutations
-import pdb  # TEMPORARY
 
 
 def update_subroute_distances(subroute, distances):
@@ -10,7 +9,7 @@ def update_subroute_distances(subroute, distances):
     We are updating the [1] index, distance-from-previous.
     '''
     for index, stop in enumerate(subroute):
-        if stop == subroute[0]:
+        if index == 0:
             continue
         prev, curr = subroute[index-1][0], stop[0]
         dist = distances[prev][curr]
@@ -26,7 +25,7 @@ def recreate_namedtuples(route, Stop_namedtuple):
             for stop_tuple in route]
 
 
-def improve_route(route_, distances, Stop_namedtuple):
+def improve_route(route, distances, Stop_namedtuple):
     '''Reorder the ordering of stops in segments (or subroutes) of size 7
     whenever a shorter segment distance can be found by reordering.
 
@@ -45,28 +44,31 @@ def improve_route(route_, distances, Stop_namedtuple):
     * For n=7, (n-2)! = 5! = 120, which is not so bad. It's very fast to
     compute one route distance and computing 120 isn't so bad either.
     '''
-    if len(route_) <= 3:
-        return route_
+    if len(route) <= 3:
+        return route
 
     n = 7
-    route = route_[:]  # is this copy necessary?
 
     # Why - n + 1? Example: a route of size n+1 has two subroutes of size n
     for index in range(len(route) - n + 1):
         end = min(index + n - 1, len(route) - 1)  # routes can be < size n
-        reorder_start = index + 1
 
-        new_orderings = list(permutations(route[reorder_start:end]))
+        # note that 'end' is used, not end-1, because slice-ends are exclusive
+        new_orderings = list(permutations(route[index+1:end]))
+
+        # a full subroute for distance calculation must include start and end
         subroutes = [[route[index]] + list(ordering) + [route[end]]
                      for ordering in new_orderings]
 
         with_updated_distances = [update_subroute_distances(
                                     subroute, distances)
                                   for subroute in subroutes]
+
         with_distance_sums = [(subroute, sum([x[1] for x in subroute]))
                               for subroute in with_updated_distances]
 
         shortest = min(with_distance_sums, key=lambda ordering: ordering[1])
-        route = route[:reorder_start] + list(shortest[0]) + route[end:]
+
+        route = route[:index] + list(shortest[0]) + route[end+1:]
 
     return recreate_namedtuples(route, Stop_namedtuple)

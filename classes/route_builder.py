@@ -5,6 +5,7 @@ from .time_custom import Time_Custom
 from .hash import Hash
 import pdb  # TEMPORARY
 import random  # TEMPORARY
+# import csv  # TEMPORARY
 
 
 class RouteBuilder():
@@ -85,6 +86,24 @@ class RouteBuilder():
         print(f'This Stop is number {self.route.index(stop)+1} on the route, '
               f'to go location #{stop.loc}, which is {stop.dist} miles from '
               f'the last stop, and has these packages:{pkgs}')
+
+    def route_to_file(self, filename):
+        '''TEMPORARY, display_route but to a file.'''
+        with open(filename, 'w') as f:
+            print(f'ROUTE is {self.compute_dist()}mi, with stops', file=f)
+            for stop in self.route:
+                pkgs = ''.join(
+                    [f"\n\tPkg {str(p.props['ID']).rjust(2)}, to go to location "
+                     f"{p.props['location'].num} /\t{p.props['location'].address}"
+                     for p in sorted(stop.pkgs, key=lambda p: p.props['ID'])])
+                overall = (f'This Stop is number {self.route.index(stop)+1} on the route, '
+                           f'to go location #{stop.loc}, which is {stop.dist} miles from '
+                           f'the last stop, and has these packages:{pkgs}')
+                print(overall, file=f)
+            print(f'Load has {len(self.get_packages())} pkgs:', file=f)
+            for pkg in self.get_packages():
+                print(str(pkg), file=f)
+            print('-' * 79, file=f)
 
     def display_route(self, called_by=''):
         '''Display route.'''
@@ -387,23 +406,27 @@ class RouteBuilder():
         # _  TEST: trace what is going on at every step of optimize and verify
         # self.route = improve_route(self.route, self.distances,
         #                            RouteBuilder.Stop)
+        self.add_final_stop()
+
         curr = self.route
         temp = improve_route(self.route, self.distances,
                              RouteBuilder.Stop)
         self.route = temp
         print(f'Route after improve_route would be:')
+        self.route_to_file('with_improve.txt')
         self.display_route()
-        self.route = curr
-        print(f'Whereas otherwise it is:')
-        self.display_route()
+        # self.route = curr
+        # print(f'Whereas otherwise it is:')
+        # self.route_to_file('without_improve.txt')
+        # self.display_route()
 
         #    VIII. Convert each Stop in route into a StopPlus
         # optimize and convert
         # _  TEST: (1) stopplus works/check main (2) test diff nearby #s
         ############################
         # cool stuff above this line
-        self.add_final_stop()  # must be done before next two statements
-        # self.route = improve_route(self.route, self.distances,
-        #                            RouteBuilder.Stop)
+        # self.add_final_stop()  # must be done before next two statements
+        # # self.route = improve_route(self.route, self.distances,
+        # #                            RouteBuilder.Stop)
         self.convert_to_stopplus()
         return self.route

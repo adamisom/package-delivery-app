@@ -10,6 +10,8 @@ TODO: I'll make a new Block 6 for this with 1-2 sub-blocks
 It's actually so much worse than I thought-72 miles for first 16. It's also somehow 155 miles for 29 packages--BAD.
 TODO: Come back to this later after blocks 4-6. New Block 7?
 
+LEFT OFF: improve_route not working. I am piping output to files and have separate full-screen Sublime with them open. Line 71 route_helpers indicates where I'll check next.
+
 AFTER coding blocks:
  - WRITING Block N+1 < 
  	- SB 6.1 < ? ?7:15@RoCo 1.5h

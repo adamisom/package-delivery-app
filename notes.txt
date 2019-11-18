@@ -1,76 +1,48 @@
+REMAINING WORK:
+Block 6: Code
+	Subblock 13: ~50m / 9:40-10:30am
+		Make a deadlines list of location-time tuples in rb
+		Pass that list + speed_fn to improve_route
+		Make a new listcomp meets_deadlines before dist sums
+			Keeps subroutes if TOTAL route UP THROUGH each 
+			and every deadline is met
+		Finally put min() in try/except with message that 
+			deadlines can not all be met!
+		In new fn meets_deadlines, cumulatively sum dist and 
+			for each stop if it's in deadlines, return False
+			if (use proj-arrival logic) it would be late,
+			else continue / return True at end
+
+	Subblock 14: ~30m / 10:30-11:00am
+		Get make_snapshot (and handle_) working again
+		AND take all screenshots that I'll need for the paper
+
+Block 7: Write
+	Subblock 15: ~30m / 11:00-11:30am
+		Generate Big-O 'table' AND put screenshots in
+	Subblock 16: ~30m / 11:30am-12:00 Noon
+		Rejigger organization, rewrite parts of some sections
+	Subblock 17: ~30m / 12:00-12:30pm
+		Finish/flesh out anything else + finish clean-up
+
+Block 8: Clean-Up / More-Code
+	Subblock 18: ~30m / 12:45pm-1:15pm IN MY BEDROOM if not MLib
+		Add hash + regex tests + Test my docstrings
+	Subblock 19: ~50m / 1:15pm-2:05pm 
+		Final clean-up of code/comments: ~15
+		AND improve readme (add requirements and features): ~15
+		AND add one or two general tests: ~15
+		AND zip it or whatever and submit this + paper to WGU: ~5
+----
 How else I would improve the program
 - optimize route could be enhanced to consider sets of segments that are shortest, which is another 'level' and thus should be another function. a clever way to manage O(n!) by splitting m up twice--could even extend again!
 - adding nearby neighbors and adding stops at the end could revisit locations if it woudl save time. right now they both depend on find_nearest's implementation ignoring previously-visited packages. I know for a fact this would reduce the time I was getting from (93.9-chagne later) to (90.0-change later)
-- 
+- a way to test different acceptable_increases and pick a good local minimum between 1.4 and 2.6 ish.
 
-NEW Problems + Resolutions
-(1) I have nothing guaranteeing packages delivered on time. 
-But I figure I could do so. My current thought is to...
- - track how many cumulative miles each deadline-pkg can be
- - pass to improve_route and cut out 'improved's that
- - assert or try/except improve_route's min, just in case some
- deadline makes a route actually impossible (so min would be on [])
-TODO: I'll make a new Block 6 for this with 1-2 sub-blocks
-(2) Distance is unreasonable right now. It's extremely unlikely to be much less than 80 or 90, and maybe even 100. Partly (only partly) b/c I was testing both truck + deadline constraints together
-It's actually so much worse than I thought-72 miles for first 16. It's also somehow 155 miles for 29 packages--BAD.
-TODO: Come back to this later after blocks 4-6. New Block 7?
-
-LEFT OFF: improve_route not working. I am piping output to files and have separate full-screen Sublime with them open. Line 71 route_helpers indicates where I'll check next.
-
-AFTER coding blocks:
- - WRITING Block N+1 < 
- 	- SB 6.1 < ? ?7:15@RoCo 1.5h
- 	Write as fast as possible
- 	- SB 6.2 < ? ?9:00@RoCo 0.75h
- 	Clean up writing & Submit writing+code
- - PRESENTATION N+2 < 
- 	- SB 7.1 < ? ?10:00@RoCo 1h
- 	Add requirements + my features to readme
- 	- SB 7.2 < ? ?11:15@RoCo 0.5h 
- 	Comb code for professionalism, test docstrings + pin repo
- - UNIT TESTS N+3 < 
- 	- SB 8.1 < ? ?12:00@RoCo 1.75h
- 	Add some tests and do any last to-dos.
-Initial estimate: 15h
-Now on track for: 17h
-Actual time spent: ?h
-
-DONE:
-# BLOCK 1 (3 TEST blocks):
-# X  TEST (1/2): works up to now--first/final, try/except, trk-deliver
-# add urgent deadlines to temp list
-# X  TEST (2/2 for Subblock 1): truck load gets urgent pkgs
-
-# check if full, if so, randomly eject right # to be full
-# iff truck initial leave time >= 9:00am, also add other deadlines
-# check if full, if so, randomly eject right # to be full
-# add deliver-withs not in there yet to temp list
-# X  TEST: d-w added (alter data to make it happen if need be)
-
-# check if size ok and if not eject d-w in reverse size-order until ok
-# _  TEST: alter data so size exceeded and know+check expected result
-
-# BLOCK 2 (2 TEST blocks, retroactively):
-# add truck constraints to temp list
-# check if full, if so, randomly eject right # to be full
-# add deliver-withs not in there yet to temp list
-# X  TEST: (1) truck (alter in main) (2) d-ws added (alter in load)
-
-# check if size ok and if not, eject d-w in reverse size-order until ok
-# if room left smaller than avail - sum(d-w's), remove d-ws from ready,
-# else add d-ws until no more groups can fit
-# X  TEST: set up many d-ws, then test groups added until can't fit
-
-# BLOCK 3 (3 TEST blocks, 2 retroactively added):
-# 3.1 create route order from those packages' stops: just use NN,
-# X  TEST: route note messed up/order/distances are reasonable
-
-# 3.2 make sure destination-correction code works
-# X  TEST: user can supply dest. corr. code, plus one manually added
-
-# 3.3 plus (NEWLY ADDED) make sure main..
-# X  TEST: main loops until all packages are delivered
-
+For later..
+  If I need to/could describe 'destinations corrections' in my write-up...
+"Destination corrections are received from the user of a program. This is necessary because currently neither corrected destinations nor the time by which a corrected destination will be known is part of the ‘package’ csv input file. Functionality in the cli module gathers all known destination-corrections and updates the relevant packages."
+--------------------------------------
 ----from How to Design Programs / HtDP
 TOP TIPS
 	1. Keep a wish list around and as long as it's not empty, work from it
@@ -109,48 +81,3 @@ FUNCTION DESIGN RECIPE
 	12. pass those tests
 	13. move the tests into a testing file and rerun them there
 	14. clean up the function
------------------------------------------------------------------
-For later..
-  If I need to/could describe 'destinations corrections' in my write-up...
-"Destination corrections are received from the user of a program. This is necessary because currently neither corrected destinations nor the time by which a corrected destination will be known is part of the ‘package’ csv input file. Functionality in the cli module gathers all known destination-corrections and updates the relevant packages."
-
-----TODO BEFORE FINISHING:
-- Write and run more tests
-- Improve readme
-- Test out all the docstrings! Specifically, find out if I need to insert spaces at the beginning of very multi-line comment/docstring after the first line.
------------------------------------------------------------------
-----assoc with git commit 3a7319a
-----meta note: to get the git commit, I first commit, then check the commit
-----hash, then paste it in this file, then git commit --amend --no-edit
-# TESTING IMPORTS
-# First, test main.py itself, with this
-hash_ex = Hash()
-print(str(hash_ex))
-# Then test imports in other modules. the below strategy is adequate:
-# put the following in main.py
-from tests.algorithms_tests import *
-from tests.hash_tests import *
-truck_test()
-cli.cli_test()
-algorithms_tests_test()
-general_tests_test()
-hash_test()
-# put in truck.py
-def truck_test():
-    function_for_testing_imports('1')
-# put in cli.py
-def cli_test():
-    function_for_testing_imports('2')
-# put in tests/algorithms_tests
-def algorithms_tests_test():
-    function_for_testing_imports('3')
-# put in tests/general_tests
-def general_tests_test():
-    function_for_testing_imports('4')
-# put in package
-def function_for_testing_imports(param):
-    print(f"well hello there{param}")
-# put in hash
-def hash_test():
-    hash_ex = Hash()
-    print(f"called from hash_tests, here's a hash: {str(hash_ex)}")

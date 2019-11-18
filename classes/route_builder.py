@@ -350,12 +350,13 @@ class RouteBuilder():
                 nearest.loc, nearest.dist, pkgs_for_stop))
             locs.remove(nearest.loc)
 
-        # BLOCK 4 (2 TEST blocks):
         #    V.    Look for nearby neighbors between each stop-pair on route
+        # PLEASE NOTE: 1.72 is simply the parameter that performed well for me
+        # with my sample data. It may need to be changed if given more data!
         acceptable_increase = 1.72
-        self.add_nearby_neighbors(acceptable_increase)  #
+        self.add_nearby_neighbors(acceptable_increase)
 
-        #    VI.   Add more stops near the end of the route (if not max_load)
+        #    VI.   Add more stops near the end of the route
         while (len(self.get_packages()) < self.max_load and
                len(self.unvisited_stops_with_packages()) > 0):
 
@@ -369,8 +370,10 @@ class RouteBuilder():
             self.route.append(RouteBuilder.Stop(
                 nearest.loc, nearest.dist, at_this_stop))
 
-        # BLOCK 5 (3 TEST blocks):
-        #    VII.  Re-order stops on route to get shorter total distance
+        #    VII.  Re-order stops on route to get shorter total distance,
+        # so long as deadlines wouldn't be missed. Note that the code up to
+        # now doesn't itself guarantee deadlines will be missed--that's a nice
+        # double-duty that improve_route is doing for us.
         self.add_final_stop()
         # curr = self.route
         # temp = improve_route(self.route, self.distances,
@@ -383,9 +386,10 @@ class RouteBuilder():
         # self.display_route()
         self.route = improve_route(self.route, self.distances,
                                    RouteBuilder.Stop)
+
+        # TEMPORARY:
         self.display_route()
 
-        #    VIII. Convert each Stop in route into a StopPlus
-        # X  TEST: (1) stopplus works/check main (2) test diff nearby #s
+        #    VIII. Convert Stops on route to StopPluses and return route
         self.convert_to_stopplus()
         return self.route

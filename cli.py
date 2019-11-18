@@ -1,5 +1,5 @@
 import re
-import pdb  # temporary
+from os import path
 from collections import namedtuple
 from .classes.time_custom import Time_Custom
 from .classes.package import Package
@@ -82,13 +82,32 @@ def package_status_at_time(package, time_custom):
     return package.props['history'][-1].state
 
 
+def package_snapshot_file(package, time_custom):
+    '''Write historical status of given package at given time to text file.'''
+    filename = 'package_snapshot.txt'
+    append_or_write = 'a' if path.exists(filename) else 'w'
+    with open(filename, append_or_write) as f:
+        package_str = str(package)
+
+        # do not include current delivery-state of package in snapshot string
+        cut_start = package_str.index('delivery status')
+        cut_end = package_str.index('destination')
+        print(package_str[0:cut_start] + package_str[cut_end:], file=f)
+
+        status = package_status_at_time(package, time_custom).name
+        print(f'\tFinally, delivery status at {time_custom} was {status}',
+              file=f)
+
+
 def package_snapshot(package, time_custom):
     '''Display historical status of a given package at a given time.'''
     package_str = str(package)
+
     # do not include current delivery-state of package in snapshot string
     cut_start = package_str.index('delivery status')
     cut_end = package_str.index('destination')
     print(package_str[0:cut_start] + package_str[cut_end:])
+
     status = package_status_at_time(package, time_custom).name
     print(f'\tFinally, delivery status at {time_custom} was {status}')
 
@@ -98,6 +117,7 @@ def make_snapshot(time_custom, packages):
     print(f'\nSNAPSHOT OF ALL PACKAGES AT {str(time_custom)}:')
     for package in packages:
         package_snapshot(package, time_custom)
+        package_snapshot_file(package, time_custom)
 
 
 def ask_user_if_they_have_correction_information():

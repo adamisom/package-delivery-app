@@ -1,3 +1,6 @@
+LEFT OFF: was gonna notate in doc which line numbers I refer to
+in route_builder for Big(O)
+
 REMAINING WORK:
 Block 6: Code
 	Subblock 13: ~50m / 9:40-10:30am / ACTUAL 10:00-11:06
@@ -13,12 +16,12 @@ Block 6: Code
 			if (use proj-arrival logic) it would be late,
 			else continue / return True at end
 
-	Subblock 14: ~30m / 10:30-11:00am / ACTUAL 11:15-?
+	Subblock 14: ~30m / 10:30-11:00am / ACTUAL 11:15-12:02pm
 		Get make_snapshot (and handle_) working again
 		AND take all screenshots that I'll need for the paper
 
 Block 7: Write
-	Subblock 15: ~30m / 11:00-11:30am
+	Subblock 15: ~30m / 11:00-11:30am / ACTUAL 12:05-?
 		Generate Big-O 'table' AND put screenshots in
 	Subblock 16: ~30m / 11:30am-12:00 Noon
 		Rejigger organization, rewrite parts of some sections

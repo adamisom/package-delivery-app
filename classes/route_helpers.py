@@ -1,4 +1,9 @@
 from itertools import permutations
+from .time_custom import Time_Custom
+
+
+class ImproveRoute_Min_ValueError(BaseException):
+    pass
 
 
 def update_subroute_distances(subroute, distances):
@@ -17,6 +22,39 @@ def update_subroute_distances(subroute, distances):
     return subroute
 
 
+def meets_deadlines(partial_route, distances, deadlines, speed, leave_time):
+    '''Return whether a given partial-route meets all package deadlines.
+
+    NOTE: I override speed with 18; see explanation below.
+    The requirements for which this project built specify that the average
+    speed of a truck is always 18mph, no matter what, and including stops.
+    I built other parts of this program to be flexible via accommodating an
+    actual speed function in the future. However, I did not deem it worth
+    the effort to make this particular function flexible wrt a speed function.
+    '''
+    if deadlines == []:
+        return True
+
+    speed = 18
+
+    distance_so_far = 0
+
+    for stop in partial_route:
+        distance_so_far += stop[1]  # stop[1] is distance (from previous stop)
+
+        # stop[0] and d[0] are both location-numbers
+        if stop[0] in [d[0] for d in deadlines]:
+            minutes_to_get_there = 60 * (distance_so_far / speed)
+            projected_arrival = Time_Custom.clone(leave_time)
+            projected_arrival.add_time(minutes_to_get_there)
+
+            deadline, = [d[1] for d in deadlines if stop[0] == d[0]]
+            if projected_arrival > deadline:
+                return False
+
+    return True
+
+
 def recreate_namedtuples(route, Stop_namedtuple):
     '''Recreate namedtuples (permutations downcasts to regular tuples).'''
     return [Stop_namedtuple(*stop_tuple)
@@ -25,7 +63,7 @@ def recreate_namedtuples(route, Stop_namedtuple):
             for stop_tuple in route]
 
 
-def improve_route(route, distances, Stop_namedtuple):
+def improve_route(route, distances, deadlines, speed, leave, Stop_namedtuple):
     '''Reorder the ordering of stops in segments (or subroutes) of size 7
     whenever a shorter segment distance can be found by reordering.
 
@@ -64,10 +102,20 @@ def improve_route(route, distances, Stop_namedtuple):
                                     subroute, distances)
                                   for subroute in subroutes]
 
-        with_distance_sums = [(subroute, sum([x[1] for x in subroute]))
-                              for subroute in with_updated_distances]
+        with_none_late = [subroute for subroute in with_updated_distances
+                          if meets_deadlines(route[:index] + list(subroute),
+                                             distances, deadlines,
+                                             speed, leave)]
 
-        shortest = min(with_distance_sums, key=lambda ordering: ordering[1])
+        with_distance_sums = [(subroute, sum([x[1] for x in subroute]))
+                              for subroute in with_none_late]
+
+        try:
+            shortest = min(with_distance_sums,
+                           key=lambda candidate_route: candidate_route[1])
+        except ValueError:  # probably min() was given an empty list
+            raise ImproveRoute_Min_ValueError('No route exists that would '
+                                              'meet all remaining deadlines.')
 
         route = route[:index] + list(shortest[0]) + route[end+1:]
 

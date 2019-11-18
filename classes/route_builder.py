@@ -18,7 +18,7 @@ class RouteBuilder():
     A Route is then simply a list of Stops.
     A 'Stop' is upgraded to a 'StopPlus' at the end.
     A StopPlus has a location* instead of just a location number, plus it has
-        - arrival: a proejcted arrival time (Time_Custom objec)
+        - arrival: a projected arrival time (Time_Custom objec)
     * A Location is itself a namedtuple of num, landmark, address.
 
     I use the namedutple _replace method to create new ones. Per the docs*,
@@ -39,7 +39,7 @@ class RouteBuilder():
         self.Locations = route_parameters['Locations']
         self.speed_function = route_parameters['speed_function']
         self.starting_location = route_parameters['starting_location']
-        self.initial_leave_time = route_parameters['initial_leave_time']
+        self.initial_leave = route_parameters['initial_leave_time']
 
         self.route = []
 
@@ -213,6 +213,12 @@ class RouteBuilder():
         dist = self.distances[self.route[-1].loc][1]  # from previous to hub
         self.route.append(RouteBuilder.Stop(self.starting_location, dist, []))
 
+    def get_earliest_deadline_for_stop(self, stop):
+        '''Return earliest deadline, if any, for a given stop in the route.'''
+        deadlines = [pkg.props['deadline'] for pkg in stop.pkgs
+                     if pkg.props['deadline']]
+        return min(deadlines) if len(deadlines) > 0 else None
+
     def Location_from_number(self, num):
         '''Return a Location from a location-number.'''
         return [L for L in self.Locations if L.num == num][0]
@@ -221,7 +227,7 @@ class RouteBuilder():
         '''Return projected arrival time for a stop on a route.'''
         index = self.route.index(stop)
         if index == 0:
-            return self.initial_leave_time
+            return self.initial_leave
         previous = self.route[index - 1]
         avg_speed = self.speed_function(previous.loc, stop.loc)
         minutes = 60 * (stop.dist / avg_speed)
@@ -310,7 +316,7 @@ class RouteBuilder():
         # print('\nAFTER most urgent:'); self.display_packages(pkgs_to_load)
 
         more_to_load = self.get_truck_constraint_packages()
-        if self.initial_leave_time > Time_Custom(8, 00, 00):
+        if self.initial_leave > Time_Custom(8, 00, 00):
             more_to_load += self.get_other_deadline_packages()
         pkgs_to_load = self.forbid_overfilling_load(pkgs_to_load, more_to_load)
 
@@ -351,9 +357,9 @@ class RouteBuilder():
             locs.remove(nearest.loc)
 
         #    V.    Look for nearby neighbors between each stop-pair on route
-        # PLEASE NOTE: 1.72 is simply the parameter that performed well for me
+        # PLEASE NOTE: ~1.6 is simply the parameter that performed well for me
         # with my sample data. It may need to be changed if given more data!
-        acceptable_increase = 1.72
+        acceptable_increase = 1.6
         self.add_nearby_neighbors(acceptable_increase)
 
         #    VI.   Add more stops near the end of the route
@@ -373,7 +379,7 @@ class RouteBuilder():
         #    VII.  Re-order stops on route to get shorter total distance,
         # so long as deadlines wouldn't be missed. Note that the code up to
         # now doesn't itself guarantee deadlines will be missed--that's a nice
-        # double-duty that improve_route is doing for us.
+        # double-duty that improve_route is doing for us. Natural place, b/c ..
         self.add_final_stop()
         # curr = self.route
         # temp = improve_route(self.route, self.distances,
@@ -384,11 +390,16 @@ class RouteBuilder():
         # print(f'Whereas otherwise it is:')
         # self.route_to_file('without_improve.txt')
         # self.display_route()
-        self.route = improve_route(self.route, self.distances,
-                                   RouteBuilder.Stop)
+        # print(f'\n')
+        stop_deadlines = [(stop.loc, self.get_earliest_deadline_for_stop(stop))
+                          for stop in self.route]
+        stop_deadlines = [sd for sd in stop_deadlines if sd[1]]  # remove Nones
 
+        self.route = improve_route(self.route, self.distances, stop_deadlines,
+                                   self.speed_function, self.initial_leave,
+                                   RouteBuilder.Stop)
         # TEMPORARY:
-        self.display_route()
+        # self.display_route()
 
         #    VIII. Convert Stops on route to StopPluses and return route
         self.convert_to_stopplus()

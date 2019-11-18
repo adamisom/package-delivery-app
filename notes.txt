@@ -1,6 +1,6 @@
 REMAINING WORK:
 Block 6: Code
-	Subblock 13: ~50m / 9:40-10:30am
+	Subblock 13: ~50m / 9:40-10:30am / ACTUAL 10:00-11:05
 		Make a deadlines list of location-time tuples in rb
 		Pass that list + speed_fn to improve_route
 		Make a new listcomp meets_deadlines before dist sums

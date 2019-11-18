@@ -16,7 +16,7 @@ def all_packages_delivered(packages):
     delivered = '\n'.join([str(pkg) + '\n' + pkg.display_history()
                            for pkg in packages
                            if pkg.props['state'].name == 'DELIVERED'])
-    print(f'DELIVERED: {delivered}')
+    # print(f'DELIVERED: {delivered}')
 
     return all([pkg.props['state'].name == 'DELIVERED'
                 for pkg in packages])
@@ -62,7 +62,7 @@ def run_program(distance_csv, package_csv):
 
     distances, Locations, packages = load_data(distance_csv, package_csv)
 
-    display_distances(distances)
+    # display_distances(distances)
 
     # Note: one destination-correction is hardcoded so that I don't have to
     # enter it each time I run this program. The assignment that this program

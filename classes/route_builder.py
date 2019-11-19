@@ -1,4 +1,3 @@
-import random
 from collections import namedtuple
 from .route_helpers import improve_route
 from .time_custom import Time_Custom
@@ -8,7 +7,7 @@ from .hash import Hash
 class RouteBuilder():
     '''Class to build a single route, from hub to hub, for a truck.
 
-    The entire "API" is the build_route method. All others are helpers.
+    The entire "API" is the build_route method. All other methods are helpers.
 
     Notes on namedtuples used
     -------------------------
@@ -27,12 +26,6 @@ class RouteBuilder():
         - arrival: a projected arrival time (Time_Custom objec)
 
     * A Location is itself a namedtuple of num, landmark, address.
-
-    I use the namedtuple _replace method to create new ones. Per the docs*,
-    since namedtuples are accessed via dot notation, "To prevent conflicts
-    with field names, the method and attribute names start with an underscore."
-    In other words the _ does not indicate _replace is supposed to be private.
-    * https://docs.python.org/3/library/collections.html#collections.namedtuple
     '''
     Neighbor = namedtuple('Neighbor', ['loc', 'dist'])
     Stop = namedtuple('Stop', ['loc', 'dist', 'pkgs'])
@@ -340,7 +333,7 @@ class RouteBuilder():
         # then remove packages in remaining groups from consideration. The idea
         # for the first part of that is to get deliver-with packages out of the
         # way as soon as possible, and the idea for the second part is to not
-        # have to worry about partial groups again while route-building
+        # have to worry about partial groups again while route-building.
         #
         # Note: it is likely the first route of the day will be longer than
         # successive trips, as it is mostly driven by package constraints,
@@ -361,8 +354,9 @@ class RouteBuilder():
 
         #    VII.  Re-order stops on route to get shorter total distance,
         # so long as deadlines wouldn't be missed. Note that the code up to
-        # now doesn't itself guarantee deadlines will be missed--that's a nice
-        # double-duty that improve_route is doing for us. Natural place, b/c ..
+        # now doesn't itself guarantee deadlines will be missed, but luckily
+        # it is a natural place to check for deadlines in the same place
+        # (namely, improve_route) we generate permutations and select the best.
         self.add_final_stop()
 
         stop_deadlines = [(stop.loc, self.get_earliest_deadline_for_stop(stop))
@@ -372,7 +366,8 @@ class RouteBuilder():
         self.route = improve_route(self.route, self.distances, stop_deadlines,
                                    self.speed_function, self.initial_leave,
                                    RouteBuilder.Stop)
-        # TEMPORARY:
+
+        # uncomment this to see what the route looks like:
         # self.display_route()
 
         #    VIII. Convert Stops on route to StopPluses and return route

@@ -12,18 +12,17 @@ from .tests.general import test
 
 def all_packages_delivered(packages):
     '''Return whether all packages are delivered.'''
-    # TEMPORARY
-    delivered = '\n'.join([str(pkg) + '\n' + pkg.display_history()
-                           for pkg in packages
-                           if pkg.props['state'].name == 'DELIVERED'])
-    # print(f'DELIVERED: {delivered}')
-
     return all([pkg.props['state'].name == 'DELIVERED'
                 for pkg in packages])
 
-def display_when_packages_were_delivered():
-    '''TODO: put lines 15-18 of this file into this function, here.'''
-    pass
+
+def display_packages_with_history(packages):
+    '''Display each delivered package and their delivery-status histories.'''
+    delivered = '\n'.join([str(pkg) + '\n' + pkg.display_history()
+                           for pkg in packages
+                           if pkg.props['state'].name == 'DELIVERED'])
+    print(f'DELIVERED: {delivered}')
+
 
 def display_distance_traveled(total_distance):
     '''Display distance (in miles) traveled to deliver all packages.'''
@@ -52,7 +51,7 @@ def display_number_delivered_on_time(packages):
 
 
 def display_distances(distances):
-    '''Print distance 2D-list as a readable table. Used during development.'''
+    '''Print distance 2D-list as a readable table.'''
     string = '\n'.join(''.join([str(item).rjust(5, ' ')
                                 for item in row])
                        for row in distances)
@@ -61,16 +60,15 @@ def display_distances(distances):
 
 
 def run_program(distance_csv, package_csv):
+    '''Run the program!'''
     say_hello()
 
     distances, Locations, packages = load_data(distance_csv, package_csv)
 
-    # display_distances(distances)
-
     # Note: one destination-correction is hardcoded so that I don't have to
     # enter it each time I run this program. The assignment that this program
     # was built for specified this destination-correction as known in advance.
-    # If you use this code you will probably want to remove it (cli.py ln ~300)
+    # If you use this code you will probably want to remove it (cli.py ln ~320)
     Destination_Corrections = get_destination_corrections_from_user(Locations)
 
     number_of_trucks = 3
@@ -97,10 +95,6 @@ def run_program(distance_csv, package_csv):
                 ['starting_location', Truck.starting_location],
                 ['initial_leave_time', Truck.first_delivery_time])
             route_builder = RouteBuilder(route_parameters)
-
-            # TEMPORARY
-            # print(f"From main, building route for truck {truck.props['ID']}\n")
-
             route = route_builder.build_route()
 
             truck.load(route_builder.get_packages())
@@ -112,12 +106,8 @@ def run_program(distance_csv, package_csv):
     display_number_delivered_on_time(packages)
 
     # make_snapshot(Time_Custom(9, 00, 00), packages)
-    # make_snapshot(Time_Custom(10, 00, 00), packages)
-    # make_snapshot(Time_Custom(13, 00, 00), packages)
-
     # handle_snapshot_request(packages)
-
-    # test()  # take out this line before promoting to production
+    test()
 
 
 if __name__ == '__main__':

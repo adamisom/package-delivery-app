@@ -25,7 +25,7 @@ def update_subroute_distances(subroute, distances):
 def meets_deadlines(partial_route, distances, deadlines, speed, leave_time):
     '''Return whether a given partial-route meets all package deadlines.
 
-    NOTE: I override speed with 18; see explanation below.
+    NOTE: I override speed with 18 (see below).
     The requirements for which this project built specify that the average
     speed of a truck is always 18mph, no matter what, and including stops.
     I built other parts of this program to be flexible via accommodating an
@@ -40,7 +40,7 @@ def meets_deadlines(partial_route, distances, deadlines, speed, leave_time):
     distance_so_far = 0
 
     for stop in partial_route:
-        distance_so_far += stop[1]  # stop[1] is distance (from previous stop)
+        distance_so_far += stop[1]  # stop[1] is distance-from-previous-stop
 
         # stop[0] and d[0] are both location-numbers
         if stop[0] in [d[0] for d in deadlines]:
@@ -77,8 +77,8 @@ def improve_route(route, distances, deadlines, speed, leave, Stop_namedtuple):
     make a shorter overall route?
     * For a given segment, I keep the start and end fixed and permute the
     order of stops in between. This means (n-2)! orderings are checked per
-    segment. This means (m-n+1) * (n-2)! total permutations are checked,
-    where m = total route length (+1 because do wrap-around to end at hub)
+    segment. This means (m-n) * (n-2)! total permutations are checked,
+    where m = total route length.
     * For n=7, (n-2)! = 5! = 120, which is not so bad. It's very fast to
     compute one route distance and computing 120 isn't so bad either.
     '''
@@ -87,9 +87,9 @@ def improve_route(route, distances, deadlines, speed, leave, Stop_namedtuple):
 
     n = 7
 
-    # Why - n + 1? Example: a route of size n+1 has two subroutes of size n
+    # Why "- n + 1?" Example: a route of size n+1 has two subroutes of size n
     for index in range(len(route) - n + 1):
-        end = min(index + n - 1, len(route) - 1)  # routes can be < size n
+        end = min(index + n - 1, len(route) - 1)  # route size can be < n
 
         # note that 'end' is used, not end-1, because slice-ends are exclusive
         new_orderings = list(permutations(route[index+1:end]))

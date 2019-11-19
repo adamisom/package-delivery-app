@@ -185,7 +185,7 @@ def validate_user_correction_information(input_string, Locations):
 
     return (user_input[0].isdigit() and   # first part an integer
             (digit_regex or               # second part a time
-             time_or_location in landmarks or     # or a location
+             time_or_location in landmarks or     # or second part a location
              time_or_location in street_addresses or
              time_or_location in street_addresses_no_zip))
 

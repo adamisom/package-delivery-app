@@ -232,7 +232,7 @@ def load_data(distance_csv, package_csv):
 
     distances = read_distance_csv(distance_csv)
 
-    # Locations populated first because clean_distance_data removes addresses
+    # Locations must be populated before clean_distance_data removes addresses
     location_data = get_location_data(distances)
     Locations = populate_locations(location_data, Location)
     clean_distance_data(distances)

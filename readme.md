@@ -1,3 +1,5 @@
+![](./project_logo.png)
+
 You can execute this code in two ways:
  1. As a package:
 "import package_delivery_app"

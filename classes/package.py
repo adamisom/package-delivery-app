@@ -80,9 +80,11 @@ class Package():
         return '\n'.join([' at:\t'.join((record.state.name, str(record.time)))
                           for record in self.props['history']])
 
-    def update_late_as_arrived(self):
+    def update_late_as_arrived(self, time):
         '''Update a late-arriving package to indicate it is now at the hub.'''
         self.set_state('AT_HUB')
+        self.props['history'].append(
+            Package.History_Record(PkgState(PkgState['AT_HUB']), time))
 
     def update_wrong_destination_as_corrected(self):
         '''Update a wrong-destination package to indicate destination is now
@@ -160,7 +162,6 @@ class Package():
     The following regex functions are not part of the Package class because
     they do not need to be--they neither consume nor produce Package objects.
 '''
-# digit_regex = re.compile("(\d{1,2}):(\d{2}) (am|pm)", re.IGNORECASE)
 truck_pattern = re.compile("(only)(.*?)(truck) \d", re.IGNORECASE)
 delivery_pattern = re.compile("(delivered with \d+[, \d+]*)", re.IGNORECASE)
 arrival_pattern = re.compile("(delayed)(.*?)\d\d?:\d\d (am|pm)", re.IGNORECASE)

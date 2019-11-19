@@ -1,9 +1,10 @@
-import random
 from .time_custom import *
 from .package import *
 
 
 class Truck():
+    '''This class creates Truck objects.'''
+
     id_counter = 1
     max_packages = 16
     average_speed = 18
@@ -11,12 +12,7 @@ class Truck():
     first_delivery_time = Time_Custom(8, 00, 00)
 
     def __init__(self):
-        '''Create Truck object.
-        Called in/by: main.py ~15
-
-        NOTE that 'location' actually refers to a location.num
-        Assumes trucks start at the hub.
-        '''
+        '''Creates Truck objects.'''
         self.props = Hash(ID=Truck.id_counter,
                           location=Truck.starting_location,
                           time=Truck.first_delivery_time,
@@ -36,7 +32,10 @@ class Truck():
 
             if (self.props['time'] > anticipated_arrival and
                     pkg.props['state'].name == 'LATE_ARRIVAL'):
-                pkg.update_late_as_arrived()
+                # anticipated_arrival will be used in the new History_Record,
+                # which means we implicitly assume late arrivals arrive
+                # precisely when we were told they would (and not even later!)
+                pkg.update_late_as_arrived(anticipated_arrival)
 
     def update_corrected_packages(self, all_packages, destination_corrections):
         '''Update all packages that had a known wrong-destination at start of day
@@ -75,8 +74,8 @@ class Truck():
     def get_mileage_for_day(self):
         '''Find and return actual mileage truck has traveled today.
 
-        This function currently just returns the distance passed in, but it
-        could be easily extended in the future to account for "real life",
+        This function currently just returns the instance prop mileage_for_day
+        but could easily be extended in the future to account for "real life",
         for example if a truck was forced to take a detour.
         '''
         return self.props['mileage_for_day']
@@ -87,23 +86,12 @@ class Truck():
         Note: this whole program implicitly assumes that trucks are able to
         deliver each package precisely on schedule.
 
-        What it should do:
-        - update EACH package's state and history properties
-        - update truck's packages and location properties
-
-        Data definition (see algorithms.py for more):
         A 'Stop' on a 'Route' is a namedtuple, comprising:
             - loc: location of the stop
             - pkgs: list of packages to drop off at this location
             - dist: distance from previous stop
             - arrival: a Time_Custom object (projected arrival, not actual)
         '''
-
-        # # TEMPORARY
-        # pretty_route = '\n\t'.join([str(stop) for stop in route])
-        # print(f'in truck.deliver, route is: {pretty_route}')
-        # return
-
         for stop in route:
             self.props['location'] = stop.loc
             self.props['time'] = stop.arrival
@@ -126,7 +114,8 @@ class Truck():
     def speed_function(cls, location1, location2):
         '''Return average speed between two locations in miles per hour.
 
-        For now, this program assumes trucks' average speed is always 18 mph
-        between any two locations, starting/stopping time notwithstanding.
+        This function currently just returns the class prop average_speed
+        but could easily be extended in the future to account for 'real life',
+        for example some roads could be faster than others.
         '''
         return cls.average_speed

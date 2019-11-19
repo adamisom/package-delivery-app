@@ -22,9 +22,6 @@ Further notes:
   - Under the hood, hashed keys and their values are stored as nested lists.
   - Hash objects are doubled and rehashed when >60% of buckets/slots are used.
   - The internal _hash method is basic and should not be regarded as secure.
-
-TODO: adjust __setitem__ to reduce count when replacing items
-that themselves were Hashes (and which thus contributed > 1 to self._count)
 '''
 
 

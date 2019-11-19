@@ -80,9 +80,10 @@ class Package():
         self.props['history'].append(
             Package.History_Record(PkgState(PkgState[state_string]), time))
 
-    def display_history(self):
+    def history_string(self, delimiter=None):
         '''Return print-statement-friendly history of package.'''
-        return '\n'.join([' at:\t'.join((record.state.name, str(record.time)))
+        return f'\n{delimiter}'.join([' at:\t'.join((record.state.name,
+                                                     str(record.time)))
                           for record in self.props['history']])
 
     def update_late_as_arrived(self, time):

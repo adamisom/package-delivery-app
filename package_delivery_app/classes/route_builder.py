@@ -67,23 +67,28 @@ class RouteBuilder():
 
     def display_stop(self, stop):
         '''Display one stop.'''
-        pkgs = ''.join(
-            [f"\n\tPkg {str(p.props['ID']).rjust(2)}, to go to location "
-             f"{p.props['location'].num} /\t{p.props['location'].address}"
-             for p in sorted(stop.pkgs, key=lambda p: p.props['ID'])])
-        print(f'This Stop is number {self.route.index(stop)+1} on the route, '
-              f'to go location #{stop.loc}, which is {stop.dist} miles from '
-              f'the last stop, and has these packages:{pkgs}')
+        pkgs = ',\t'.join(['Package #' + str(p.props['ID']) for p in
+                           sorted(stop.pkgs, key=lambda p: p.props['ID'])])
+        print(f'Stop {self.route.index(stop)+1}: going to '
+              f'location #{stop.loc}, which is {stop.dist} miles from '
+              f'the last stop, and has these packages:\n\t{pkgs}')
 
-    def display_route(self, called_by=''):
+    def display_route(self, called_by='', show_load=False):
         '''Display route.'''
-        print(f'{called_by}/ ROUTE is {self.compute_dist()}mi, with stops:')
+        if called_by:
+            print(f'{called_by}')
+
+        print('{:-^79}'.format(f' This Route is {self.compute_dist()}miles '))
+
         for stop in self.route:
             self.display_stop(stop)
-        print(f'Load has {len(self.get_packages())} pkgs, including:')
-        for pkg in self.get_packages():
-            print(str(pkg))
-        print('-' * 79)
+
+        if show_load:
+            print(f'Load has {len(self.get_packages())} pkgs, including:')
+            for pkg in self.get_packages():
+                print(str(pkg))
+
+        print('*' * 79, '\n')
 
     def grouped_deliver_with_constraints(self):
         '''Return list of lists of ready packages, sorted smaller first,
@@ -366,9 +371,6 @@ class RouteBuilder():
         self.route = improve_route(self.route, self.distances, stop_deadlines,
                                    self.speed_function, self.initial_leave,
                                    RouteBuilder.Stop)
-
-        # uncomment this to see what the route looks like:
-        # self.display_route()
 
         #    VIII. Convert Stops on route to StopPluses and return route
         self.convert_to_stopplus()

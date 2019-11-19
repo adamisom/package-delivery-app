@@ -3,3 +3,4 @@ __pycache__/
 build/
 dist/
 package_delivery_app.egg-info/
+package_snapshot.txt

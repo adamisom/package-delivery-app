@@ -6,15 +6,54 @@ from .classes.package import Package
 
 
 def say_hello():
-    '''Say hello when the program starts.'''
-    print('Hello!\nThis application simulates package delivery via truck.\n')
+    '''Say hello when the program starts and advise the user they will be asked
+    what information, if any, they would like displayed.'''
+    print('Hello!\nThis application simulates package delivery via truck.')
+    print('\nPlease note: A "route" is a single trip, starting at the hub\n'
+          'and ending at the hub; multiple delivery routes may be needed\n'
+          'to deliver all your packages.\n')
+    print('This program is about to ask you a few things, in this order:\n'
+          '\twhether you have any destination-correction information to enter,'
+          '\n\twhether you want to display each route\'s path (with packages),'
+          '\n\twhether you would like to get a snapshot at the end, showing'
+          '\n\tthe delivery status of each package at some time that you '
+          'provide,\n\tand finally, whether you want see the history '
+          'of each package at the very end.\n')
+
+
+def ask_if_route_display_wanted():
+  '''Return whether user wants to view each route and its stops.'''
+  user_says = input('Would you like to see each route that is calculated?\n')
+  return user_says.lower().strip() in ('y', 'yes')
+
+
+def ask_if_snapshot_wanted():
+  '''Return whether user wants a snapshot.'''
+  user_says = input('Would you like to generate a snapshot at the end?\n'
+                    'If so, then once the routes are calculated (and '
+                    'displayed, if you wanted that),\nyou\'ll be '
+                    'asked to provide a time for the snapshot.\nThat snapshot '
+                    'will appear in the console here, and will also be stored '
+                    'in\na new file "package_snapshot.txt" in the directory '
+                    'you are running this from.\nIf you would '
+                    'like a snapshot later, press "y" or "yes", then Enter.\n'
+                    'Otherwise, press any other key, like Enter or "n".\n')
+  return user_says.lower().strip() in ('y', 'yes')
+
+
+def ask_if_package_histories_wanted():
+  '''Return whether user wants to view all package histories.'''
+  user_says = input('Would you like to see all packages and their histories '
+                    'at the end?\n(This will appear after a snapshot, if you '
+                    'asked for one.)\n')
+  return user_says.lower().strip() in ('y', 'yes')
 
 
 def give_user_snapshot_instructions():
     '''Advise the user to enter a time for a snapshot.'''
-    print('If you\'d like to see the status of each package at a given time, '
-          'please enter the time on the next line.\nMake sure to enter a '
-          '\'military\' time, for example 14:00 for 2:00pm. Seconds are '
+    print('\nAlright, time for that snapshot you asked about.\n'
+          'Please enter the time on the next line.\nMake sure to enter a '
+          '\'military\' time, for example 14:00 for 2:00pm.\nSeconds are '
           'optional, but make sure to use two digits for the hour.\n'
           'Examples: 08:35, 10:00, 12:01:30 (this would be just after noon)')
 
@@ -64,6 +103,8 @@ def handle_snapshot_request(packages):
 
     print(f'Alright! You asked for a snapshot at time {user_requested_time}')
     make_snapshot(Time_Custom(*time_parts), packages)
+
+    print('*' * 79, '\n')
 
 
 def package_status_at_time(package, time_custom):
@@ -122,10 +163,15 @@ def make_snapshot(time_custom, packages):
 
 def ask_user_if_they_have_correction_information():
     '''Ask user if they have destination-correction information.'''
-    print('If you know of a package with the wrong destination, you are in '
-          'the right place. If you don\'t have this information right now, '
-          'no problem--just type "q" or "quit" and hit Enter.\nIf you do, '
-          'have information, type any other key--like the Enter key.')
+    print('If you have any destination-corrections for packages, you are in '
+          'the right place.\nIf you don\'t have any corrections, no problem--'
+          'just type "q" or "quit" and hit Enter.\nIf you do have information, '
+          'type any other key--like the Enter key.\n'
+          'Just keep in mind that if your distance file indicates that any '
+          'packages\nare known to have the wrong destination, but you do not '
+          'supply a correction,\nthose packages will not get delivered. '
+          'Remember--to exit this optional step, \njust press "q" or "quit", '
+          ' then Enter, to skip it.')
     ask_user = input('')
     return ask_user.lower().strip() not in ('q', 'quit')
 
@@ -253,7 +299,7 @@ def get_time_or_location_from_string(time_or_location, Locations):
 
     digit_regex = re.search("(\d{1,2}):(\d{2})", time_or_location)
     if digit_regex:
-        hour, minute = time_parts.groups()
+        hour, minute = digit_regex.groups()
         hour, minute = int(hour), int(minute)
         return Time_Custom(hour, minute, 0)
 
@@ -281,7 +327,7 @@ def get_one_destination_correction(Locations):
     return correction_item_list
 
 
-def get_destination_corrections_from_user(Locations):
+def get_destination_corrections(Locations):
     '''Get one or more destination-corrections from user; calls many helpers.
 
     Data definition:
@@ -309,34 +355,38 @@ def get_destination_corrections_from_user(Locations):
     Destination_Correction = namedtuple('Destination_Correction',
                                         ['pkg_id', 'time', 'location'])
 
-    # Per the note in __main__.py, one correction is hard-coded because MY
-    # top priority in writing this program was to pass a WGU course (C950).
-    # My second priority was to have fun and experiment.
-    hardcoded_corrections = True
+    user_has_information = ask_user_if_they_have_correction_information()
 
-    if hardcoded_corrections:
-        addrs, = [L for L in Locations if L.address == '410 S State St 84111']
-        Destination_Corrections.append(
-            Destination_Correction(9, Time_Custom(10, 20, 00), addrs))
+    if not user_has_information:
+        return Destination_Corrections
 
-    else:
-        user_has_information = ask_user_if_they_have_correction_information()
-        if not user_has_information:
-            return Destination_Corrections
+    give_user_correction_instructions()
 
-        give_user_correction_instructions()
+    while user_has_information:
+        item_or_quit = get_one_destination_correction(Locations)
 
-        while user_has_information:
-            item_or_quit = get_one_destination_correction(Locations)
-
-            if item_or_quit == 'quit':
-                break
-            else:
+        if item_or_quit == 'quit':
+            break
+        else:
+            match = [c for c in Destination_Corrections
+                     if item_or_quit[0] == c.pkg_id]
+            # merge or overwrite existing correction for that package if exists
+            if len(match) > 0:
+                match = match[0]
+                index = Destination_Corrections.index(match)
+                updated = (match.pkg_id,
+                           (item_or_quit[1] or match.time),
+                           (item_or_quit[2] or match.location))
+                Destination_Corrections[index] = (
+                  Destination_Correction(*updated))
+            else:  # add new correction
                 Destination_Corrections.append(
                   Destination_Correction(*item_or_quit))
 
-            ask_for_more = input('Would you like to add another? Type "y" or '
-                                 '"yes" if so.\nOtherwise, hit Enter.\n')
-            user_has_information = ask_for_more.lower().strip() in ('y', 'yes')
+        ask_for_more = input('\nWould you like to add another? Type "y" '
+                             'or "yes" if so.\nOtherwise, hit Enter.\n')
+        user_has_information = ask_for_more.lower().strip() in ('y', 'yes')
+
+    print('*' * 79, '\n')
 
     return Destination_Corrections

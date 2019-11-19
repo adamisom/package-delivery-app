@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="package-delivery-app",
-    version="0.9.0",
+    version="0.9.2",
     author="Adam Isom",
     author_email="adam.r.isom@gmail.com",
     description="A simulation of package delivery with constraints",
@@ -18,5 +18,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6.8',
+    python_requires='>=3.6',
 )

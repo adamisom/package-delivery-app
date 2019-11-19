@@ -1,7 +1,8 @@
 # Adam Isom, Student ID #000906109
 import sys
-from .cli import (say_hello, make_snapshot, handle_snapshot_request,
-                  get_destination_corrections_from_user)
+from .cli import (say_hello, ask_if_snapshot_wanted, handle_snapshot_request,
+                  ask_if_package_histories_wanted, ask_if_route_display_wanted,
+                  get_destination_corrections)
 from .load import load_data
 from .classes.time_custom import Time_Custom
 from .classes.hash import Hash
@@ -11,18 +12,35 @@ from .classes.route_builder import RouteBuilder
 from .tests.general import test
 
 
+'''
+Note: the number 79 is hardcoded 5 times in "display" functions and methods
+    to print out a line 79 characters long (2 times here in __main__, 2 times
+    in cli, and 1 time in route_builder), so if a user's console is less than
+    79 characters, the print-outs won't be pretty.
+'''
+
+
 def all_packages_delivered(packages):
     '''Return whether all packages are delivered.'''
     return all([pkg.props['state'].name == 'DELIVERED'
                 for pkg in packages])
 
 
+def number_delivered(packages):
+    '''Return count of number delivered.'''
+    return sum([1 for pkg in packages
+                if pkg.props['state'].name == 'DELIVERED'])
+
+
 def display_packages_with_history(packages):
-    '''Display each delivered package and their delivery-status histories.'''
-    delivered = '\n'.join([str(pkg) + '\n' + pkg.display_history()
-                           for pkg in packages
-                           if pkg.props['state'].name == 'DELIVERED'])
-    print(f'DELIVERED: {delivered}')
+    '''Display each package and its delivery-status histories.'''
+    sorted_pkgs_with_history = '\n'.join(
+        [(str(pkg).replace('PkgState.', '') + '\n' + '\t' +
+          pkg.history_string('\t'))
+        for pkg in sorted(packages, key=lambda p: p.props['ID'])])
+
+    print(f'Packages and their histories:\n{sorted_pkgs_with_history}\n')
+    print('*' * 79, '\n')
 
 
 def display_distance_traveled(total_distance):
@@ -62,15 +80,14 @@ def display_distances(distances):
 
 def run_program(distance_csv, package_csv):
     '''Run the program!'''
-    say_hello()
-
     distances, Locations, packages = load_data(distance_csv, package_csv)
 
-    # Note: one destination-correction is hardcoded so that I don't have to
-    # enter it each time I run this program. The assignment that this program
-    # was built for specified this destination-correction as known in advance.
-    # If you use this code you will probably want to remove it (cli.py ln ~320)
-    Destination_Corrections = get_destination_corrections_from_user(Locations)
+    say_hello()
+    Destination_Corrections = get_destination_corrections(Locations)
+    route_display_wanted = ask_if_route_display_wanted()
+    snapshot_wanted = ask_if_snapshot_wanted()
+    package_histories_wanted = ask_if_package_histories_wanted()
+    print('*' * 79, '\n')
 
     number_of_trucks = 3
     number_of_drivers = 2
@@ -78,9 +95,9 @@ def run_program(distance_csv, package_csv):
     for i in range(number_of_drivers):  # trucks can't be sent without drivers
         trucks.append(Truck())
 
-    count = 0
-    while count < 5 and not all_packages_delivered(packages):
-        count += 1
+    while not all_packages_delivered(packages):
+        number_delivered_before_loop = number_delivered(packages)
+
         for truck in trucks:
 
             packages_ready = truck.get_available_packages(
@@ -98,17 +115,28 @@ def run_program(distance_csv, package_csv):
             route_builder = RouteBuilder(route_parameters)
             route = route_builder.build_route()
 
+            if route_display_wanted and route != []:
+                route_builder.display_route()
+
             truck.load(route_builder.get_packages())
             truck.deliver(route)
+
+        number_delivered_after_loop = number_delivered(packages)
+        if not number_delivered_after_loop > number_delivered_before_loop:
+            break
 
     total_distance = sum([truck.props['mileage_for_day']
                           for truck in trucks])
     display_distance_traveled(total_distance)
     display_number_delivered_on_time(packages)
+    print('\n')
+    print('*' * 79)
 
-    # make_snapshot(Time_Custom(9, 00, 00), packages)
-    # handle_snapshot_request(packages)
-    test()
+    if snapshot_wanted:
+        handle_snapshot_request(packages)
+
+    if package_histories_wanted:
+        display_packages_with_history(packages)
 
 
 if __name__ == '__main__':
@@ -117,5 +145,10 @@ if __name__ == '__main__':
         pkg_csv = sys.argv[2]
     except IndexError:
         raise IndexError('You didn\'t provide both required csv files')
+
+    # try:
+    #     ? = argv[3]
+    # except IndexError:
+    #     pass
 
     run_program(dist_csv, pkg_csv)

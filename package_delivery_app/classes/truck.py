@@ -68,7 +68,7 @@ class Truck():
                 updated_destination, = [c for c in destination_corrections
                                         if c.pkg_id == pkg.props['ID']]
 
-                if updated_destination is not None:
+                if updated_destination.location is not None:
                     pkg.update_package_destination(
                         updated_destination.location)
                     pkg.update_wrong_destination_as_corrected()

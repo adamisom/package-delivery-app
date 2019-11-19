@@ -1,41 +1,24 @@
-TODOs (for better code but ~same functionality):
-- Readme: improve it
-- Main: adjust while loop so it can't run infinitely: make it check whether any packages were loaded at all, and terminate if none were loaded during one iteration of the loop (since such will mean that it will loop infinitely).
+TODO list
+For better code but ~same functionality:
+
+- Hash: adjust __setitem__ to reduce count when replacing
+items that themselves were Hashes (and which thus contributed
+> 1 to self._count). This is not a critical bug--it would just
+lead to unnecesarily large __props.
+
+- Hash: _flatten and _deepcopy could both be made shorter
+
+- Truck and Package: pass destination-correction time from
+update_corrected_packages to Package's
+update_wrong_destination_as_corrected and have that method
+append a history record to indicate when the delivery-status
+changed from wrong-destination to at-hub.
+
 - Add TESTS!
-	- Hash and Regex: convert tests to Python's built-in unittest or an actual testing module instead of my sad current print-statement crutches.
-	- Algorithms': add automated tests route_builder and route_helpers
-	- General: add automated tests that walk through the whole app from start to finish ('integration' test(s))
-- Hash: adjust __setitem__ to reduce count when replacing items that
- themselves were Hashes (and which thus contributed > 1 to self._count).
- This is not a critical bug--it would just lead to unnecesarily large __props.
-- Truck and Package: pass destination-correction time from update_corrected_packages to Package's update_wrong_destination_as_corrected and have that method append a history record to indicate when the delivery-status changed from wrong-destination to at-hub.
-
-Possible Enhancements:
-- ....
-----
-REMAINING WORK:
-Block 7: Write
-	Subblock 15: ~30m / 11:00-11:30am / ACTUAL 12:05-?
-		Generate Big-O 'table' AND put screenshots in
-	Subblock 16: ~30m / 11:30am-12:00 Noon
-		Rejigger organization, rewrite parts of some sections
-	Subblock 17: ~30m / 12:00-12:30pm
-		Finish/flesh out anything else + finish clean-up
-
-Block 8: Clean-Up / More-Code
-	Subblock 18: ~30m / 12:45pm-1:15pm IN MY BEDROOM if not MLib
-		Add hash + regex tests + Test my docstrings
-	Subblock 19: ~50m / 1:15pm-2:05pm 
-		Final clean-up of code/comments: ~15
-		AND improve readme (add requirements and features): ~15
-		AND add one or two general tests: ~15
-		AND zip it or whatever and submit this + paper to WGU: ~5
-----
-How else I would improve the program
-- optimize route could be enhanced to consider sets of segments that are shortest, which is another 'level' and thus should be another function. a clever way to manage O(n!) by splitting m up twice--could even extend again!
-- adding nearby neighbors and adding stops at the end could revisit locations if it woudl save time. right now they both depend on find_nearest's implementation ignoring previously-visited packages. I know for a fact this would reduce the time I was getting from (93.9-chagne later) to (90.0-change later)
-- a way to test different acceptable_increases and pick a good local minimum between 1.4 and 2.6 ish.
-
-For later..
-  If I need to/could describe 'destinations corrections' in my write-up...
-"Destination corrections are received from the user of a program. This is necessary because currently neither corrected destinations nor the time by which a corrected destination will be known is part of the ‘package’ csv input file. Functionality in the cli module gathers all known destination-corrections and updates the relevant packages."
+	- Hash and Regex: convert tests to Python's built-in
+	unittest or an actual testing module instead of my sad
+	current print-statement crutches.
+	- Algorithms': add automated tests route_builder and
+	route_helpers
+	- General: add automated tests that walk through the whole
+	app from start to finish ('integration' test(s))

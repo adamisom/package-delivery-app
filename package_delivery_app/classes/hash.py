@@ -13,6 +13,10 @@ class Hash():
         example5 = Hash(('hi', 6))  # adds a key of 'hi' with value 6
         example6 = Hash(a_kwarg=45)  # adds a key of 'a_kwarg' with value 45
 
+    Attributes (Instance variables):
+     - hash_size: all Hash objects start with 50 buckets/slots
+     - props: this stores the hashed values. Initialized with Nones.
+
     Note on hash collision: the chaining approach is used.
       If multiple values have the same hashed index, there will be a list of
       key-value lists at that index.
@@ -26,12 +30,7 @@ class Hash():
     '''
 
     def __init__(self, *args, **kwargs):
-        '''Create hash object.
-
-        Attributes:
-          - hash_size: all Hash objects start with 50 buckets/slots
-          - props: this stores the hashed values. Initialized with Nones.
-        '''
+        '''Create Hash object.'''
         self._hash_size = 50
         self._props = [None] * self._hash_size
         self._count = 0

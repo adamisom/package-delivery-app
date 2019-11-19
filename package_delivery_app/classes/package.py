@@ -19,21 +19,26 @@ class PkgState(Enum):
 
 
 class Package():
+    '''The Package class provides Package objects.
+
+    Attributes (Instance variables):
+     - ID: ID
+     - deadline: when a package must be delivered by
+     - weight: in kilograms.
+        Note: no aspect of this entire program currently cares about weight.
+    - location: a namedtuple of num, landmark, address
+    - special note: a property of a package that itself has 4 properties:
+        - truck_number
+        - deliver_with
+        - late_arrival
+        - wrong_destination
+        The first two of these subproperties are used to set initial state.
+    '''
 
     History_Record = namedtuple('History_Record', ['state', 'time'])
 
     def __init__(self, pkg_id, d, w, sn, location):
-        '''Create Package object.
-
-        Data definitions:
-        1. location: a namedtuple of num, landmark, address.
-        2. special note: a property of a package that itself has 4 properties:
-            - truck_number
-            - deliver_with
-            - late_arrival
-            - wrong_destination
-        The first two of these sub-properties are used to set initial state.
-        '''
+        '''Create Package object.'''
         self.props = Hash(ID=int(pkg_id),
                           deadline=d,
                           weight=w,

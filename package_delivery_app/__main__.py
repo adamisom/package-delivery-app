@@ -1,4 +1,5 @@
 # Adam Isom, Student ID #000906109
+import sys
 from .cli import (say_hello, make_snapshot, handle_snapshot_request,
                   get_destination_corrections_from_user)
 from .load import load_data
@@ -111,5 +112,10 @@ def run_program(distance_csv, package_csv):
 
 
 if __name__ == '__main__':
-    run_program('/Users/adamisom/Desktop/WGUPS Distance Table.csv',
-                '/Users/adamisom/Desktop/WGUPS Package File.csv')
+    try:
+        dist_csv = sys.argv[1]
+        pkg_csv = sys.argv[2]
+    except IndexError:
+        raise IndexError('You didn\'t provide both required csv files')
+
+    run_program(dist_csv, pkg_csv)

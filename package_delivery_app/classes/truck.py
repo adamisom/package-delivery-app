@@ -3,7 +3,27 @@ from .package import *
 
 
 class Truck():
-    '''This class creates Truck objects.'''
+    '''This class creates Truck objects.
+
+    Class Attributes:
+     - id_counter: to ensure Trucks have unique IDs, starting at 1
+     - max_packages: all trucks carry a maximum of 16 packages at once
+     - average_speed: all trucks always go at 18mph (including stops)
+     - first_delivery_time: all trucks initially leave the hub at 8:00 AM
+
+    Attributes (Instance variables):
+     - ID: ID
+     - location: a namedtuple of num, landmark, address
+     - time: current time of truck
+        This only updates when trucks arrive somewhere, not every minute.
+     - packages: list of packages currently on the truck
+     - mileage_for_day: mileage for the day
+
+    Trucks, when they are at the hub, are capable of seeing whether any
+    late-arrival packages have arrived and updating such packages, and they
+    are also capable (or rather, you can suppose their drivers are capable) of
+    updating wrong-destination packages (if the correct destination is known).
+    '''
 
     id_counter = 1
     max_packages = 16
@@ -12,7 +32,7 @@ class Truck():
     first_delivery_time = Time_Custom(8, 00, 00)
 
     def __init__(self):
-        '''Creates Truck objects.'''
+        '''Create Truck object.'''
         self.props = Hash(ID=Truck.id_counter,
                           location=Truck.starting_location,
                           time=Truck.first_delivery_time,

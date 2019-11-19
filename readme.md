@@ -15,10 +15,10 @@ The program's entry point is run_program() in \_\_main\_\_.py. The requirements 
 
 You can execute as a package or as a module. 
 1. As a package:
-   - "import package_delivery_app as pda"
-   - "pda.run_program(_your_distance_csv_, _your_package_csv_)"
+   - import package_delivery_app as pda
+   - pda.run_program(_your_distance_csv_, _your_package_csv_)
 2. As a module: 
-   - "python -m package_delivery_app _your_distance_csv_ _your_package_csv_"
+   - python -m package_delivery_app _your_distance_csv_ _your_package_csv_"
 
 Reminder: wrap filepaths in quotes if they have any spaces.
 
@@ -41,11 +41,11 @@ Tips:
 - Custom Hash and time classes are used. The Hash class was designed to (nearly) replicate Python dictionaries and was a course requirement.
 
 #### Notably unrealistic assumptions:
-- trucks maintain a constant speed of 18 miles per hour at all times
-- trucks have a capacity of just 16 packages
+- Trucks maintain a constant speed of 18 miles per hour at all times.
+- Trucks have a capacity of just 16 packages.
 
 #### What is definitely out-of-scope
-It would be pretty cool for this to allow real-time updates, to track when trucks actually arrive at various places. It would be pretty cool for this to integrate with a package-scanner. It would be pretty cool for this to have a pretty web and/or mobile front-end, or even a GUI allowing users to add or update package information after initial load. It would be pretty cool for this to use a database (SQLAlchemy is fun to use). It does not do any of those things and almost surely never will.
+It would be pretty cool for this to allow real-time updates, to track when trucks actually arrive at various places. It would be pretty cool for this to integrate with a package-scanner. It would be pretty cool for this to have a pretty web and/or mobile front-end, or even a GUI. It would be pretty cool for this to use a database (SQLAlchemy is fun to use). It does not do any of those things and likely never will.
 
 ## Possible Future Enhancements
 - add and automate tests
@@ -71,7 +71,7 @@ Idiomatic or 'Pythonic' ways were preferred, to the extent I've successfully lea
 I aimed for clarity in organization at the package, module, and method/function level; in docstrings and other comments; and in naming of variables, methods/functions and classes. I aimed to keep each methods/function brief, for it to do one type of thing, and for all its logic to be on the "same level". If you read all the code and say 'WTF' more than a few times, I guess I've failed to achieve that clarity.
 
 ## Logo
-Logo is a composite of 'noncommercial use with modification' images, except the Python logo which I don't think has the 'with modification' qualifier.
+The logo is a composite of 'noncommercial use with modification' images, except the Python logo which I don't think has the 'with modification' qualifier.
 
 ## License
-MIT @ Adam Reed Isom 2019 (see LICENSE.txt)
+MIT (see LICENSE.txt for details)

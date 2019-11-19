@@ -27,7 +27,7 @@ You can run this code as a package or as a module.
 Reminder: wrap filepaths in quotes if they have any spaces.
 
 Tip: use Python's \_\_doc\_\_ function to learn more about a package or class.
-    - Example: print(package_delivery_app.Hash.\_\_doc\_\_)
+  - Example: print(package_delivery_app.Hash.\_\_doc\_\_)
 
 ## More Information
 #### Purposes

@@ -1,31 +1,30 @@
-'''The Hash class provides hash-table objects.
-
-Public API / Examples of Usage, in Ten Lines:
-    example = Hash()  # initialize
-    example['hello'] = 5
-    example['hello']  # returns 5
-    str(example)  # returns { hello: 5 }  (but {} on separate lines)
-    example['hey']  # raises KeyError
-    example2 = Hash(3)  # raises TypeError (keys must be strings)
-    example3 = Hash('hi')  # adds a key of 'hi' and default value of None
-    example4 = Hash(['hi', 3])  # adds a key of 'hi' with value 3
-    example5 = Hash(('hi', 6))  # adds a key of 'hi' with value 6
-    example6 = Hash(a_kwarg=45)  # adds a key of 'a_kwarg' with value 45
-
-Note on hash collision: the chaining approach is used.
-  If multiple values have the same hashed index, there will be a list of
-  key-value lists at that index.
-  For the more common case of no collision for a given index, there will be
-  only a single key-value list at an index.
-
-Further notes:
-  - Under the hood, hashed keys and their values are stored as nested lists.
-  - Hash objects are doubled and rehashed when >60% of buckets/slots are used.
-  - The internal _hash method is basic and should not be regarded as secure.
-'''
-
-
 class Hash():
+    '''The Hash class provides hash-table objects.
+
+    Public API / Examples of Usage, in Ten Lines:
+        example = Hash()  # initialize
+        example['hello'] = 5
+        example['hello']  # returns 5
+        str(example)  # returns { hello: 5 }  (but {} on separate lines)
+        example['hey']  # raises KeyError
+        example2 = Hash(3)  # raises TypeError (keys must be strings)
+        example3 = Hash('hi')  # adds a key of 'hi' and default value of None
+        example4 = Hash(['hi', 3])  # adds a key of 'hi' with value 3
+        example5 = Hash(('hi', 6))  # adds a key of 'hi' with value 6
+        example6 = Hash(a_kwarg=45)  # adds a key of 'a_kwarg' with value 45
+
+    Note on hash collision: the chaining approach is used.
+      If multiple values have the same hashed index, there will be a list of
+      key-value lists at that index.
+      For the more common case of no collision for a given index, there will be
+      only a single key-value list at an index.
+
+    Further notes:
+      - Under the hood, hashed keys and their values are stored as nested lists
+      - Hash objects are doubled and rehashed when # items >60% of __props size
+      - The internal _hash method is basic and should not be regarded as secure
+    '''
+
     def __init__(self, *args, **kwargs):
         '''Create hash object.
 

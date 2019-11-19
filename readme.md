@@ -6,9 +6,13 @@ This repo simulates package-delivery by truck.
 It expects csv files containing distance data and package data. It instantiates truck and package objects and then constructs a route which handles multiple package constraints, uses nearest-neighbors, and shortens the route as much as possible while still delivering all package on time. It then "loads" trucks and "delivers" packages.
 
 ## Installation
-Dependencies: none. Prerequisites: Python 3. OS: works on Mac and Windows. Tech used: just Python (3.6.8 used).
+Just `pip install package-delivery-app`
 
-`pip install package-delivery-app`
+Dependencies: none.
+
+Prerequisites: Python 3 and either MacOS or a recent Windows.
+
+Tech used: just Python 3.6.8.
 
 ## Usage
 The program's entry point is run_program() in \_\_main\_\_.py. The requirements for the distance and package csv files are documented in the load.py docstrings.
@@ -21,6 +25,7 @@ You can run this code as a package or as a module.
    - python -m package_delivery_app your_distance_csv your_package_csv
 
 Reminder: wrap filepaths in quotes if they have any spaces.
+
 Tip: use Python's __doc__ function to learn more about a package or class.
     - Example: print(package_delivery_app.Hash.\_\_doc\_\_)
 
@@ -60,7 +65,8 @@ It would be pretty cool for this to allow real-time updates, to track when truck
 ## Code Style
 This project adheres to pep8.
 
-Idiomatic or 'Pythonic' ways were preferred, to the extent I've successfully learned them. Possible exception: I often prefer from/import for imports. Another possible exception: no helper to use instead of several print statements that print 79 \*'s.
+Idiomatic or 'Pythonic' ways were preferred, to the extent I've successfully learned them. Possible exception: I often prefer from/import for imports. Another possible exception: I opted to write several print
+no helper to use instead of several print statements that print 79 \*'s.
 
 I aimed for clarity in organization at the package, module, and method/function level; in docstrings and other comments; and in naming of variables, methods/functions and classes. I aimed to keep each methods/function brief, for it to do one type of thing, and for all its logic to be on the "same level". If you read all the code and say 'WTF' more than a few times, I guess I've failed to achieve that clarity.
 

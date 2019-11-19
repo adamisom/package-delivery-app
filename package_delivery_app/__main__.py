@@ -146,9 +146,4 @@ if __name__ == '__main__':
     except IndexError:
         raise IndexError('You didn\'t provide both required csv files')
 
-    # try:
-    #     ? = argv[3]
-    # except IndexError:
-    #     pass
-
     run_program(dist_csv, pkg_csv)

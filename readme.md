@@ -1,5 +1,5 @@
 # Package Delivery App
-<img src="project_logo.png" alt="app logo" width="480">
+<img src="package_delivery_app/project_logo.png" alt="app logo" width="480">
 
 This repo simulates package-delivery by truck. 
 

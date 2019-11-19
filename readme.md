@@ -13,20 +13,20 @@ No dependencies. Works on Mac & Windows. Vanilla Python (3.6.8). Just
 ## Usage
 The program's entry point is run_program() in \_\_main\_\_.py. The requirements for the distance and package csv files are documented in the load.py docstrings.
 
-You can execute as a package or as a module. 
+You can run this code as a package or as a module. 
 1. As a package:
    - import package_delivery_app as pda
-   - pda.run_program(_your_distance_csv_, _your_package_csv_)
+   - pda.run_program(your_distance_csv, your_package_csv)
 2. As a module: 
-   - python -m package_delivery_app _your_distance_csv_ _your_package_csv_"
+   - python -m package_delivery_app your_distance_csv your_package_csv
 
 Reminder: wrap filepaths in quotes if they have any spaces.
 
-Tips: 
- - inspecting which functions are imported from a module into \_\_main\_\_ reveals what the 'public API' of that module is intended to be 
+#### Tips: 
+ - Inspecting which functions are imported from a module into \_\_main\_\_ reveals what the 'public API' of that module is intended to be 
     - for example, build_route is the only Route_Builder.py method meant to be called elsewhere
-  - there are several "display_" methods you could avail yourself of to pretty-print various things
-  - if you're not familiar with Python's dir and \_\_doc\_\_ functions, they're helpful for learning more about what a package offers. 
+  - There are several "display_" methods you could avail yourself of to pretty-print various things
+  - If you're not familiar with Python's dir and \_\_doc\_\_ functions, they're helpful for learning more about what a package offers. 
     - Example: dir(package_delivery_app.load)
     - Example: print(package_delivery_app.Hash.\_\_doc\_\_)
 

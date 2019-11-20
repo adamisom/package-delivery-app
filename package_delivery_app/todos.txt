@@ -1,3 +1,9 @@
+see lines ~350 in route_builder
+where I have notes on where I am at
+solving the bug(s)
+
+
+
 FINAL coding block. Jesus Christ.
 
 Subblock 20: update d-c handling to not see correct address if truck time not > d-c time, if it exists; also change 'urgent' pkgs to be those <2h after leave and replace references to 9am, 10am in route_builder; check it works then also re-add in the single-line main change that fixes the 8am rb issue, rerun to see my familiar error

@@ -1,5 +1,6 @@
 from itertools import permutations
 from .time_custom import Time_Custom
+import pdb  # TEMPORARY
 
 
 class ImproveRoute_Min_ValueError(ValueError):
@@ -39,8 +40,20 @@ def meets_deadlines(partial_route, distances, deadlines, speed, leave_time):
 
     distance_so_far = 0
 
+    # TEMPORARY
+    # if (leave_time > Time_Custom(9, 45, 00) and
+    #     len([stop for stop in partial_route
+    #          if stop[0] in [d[0] for d in deadlines]]) > 0):
+    # if (leave_time > Time_Custom(9, 45, 00) and
+    #     len([stop for stop in partial_route if stop[0] == 14]) > 0):
+    #     pdb.set_trace()
+
     for stop in partial_route:
         distance_so_far += stop[1]  # stop[1] is distance-from-previous-stop
+
+        # TEMPORARY
+        # if leave_time > Time_Custom(9, 45, 00):
+        #     pdb.set_trace()
 
         # stop[0] and d[0] are both location-numbers
         if stop[0] in [d[0] for d in deadlines]:

@@ -2,6 +2,7 @@ from collections import namedtuple
 from .route_helpers import improve_route
 from .time_custom import Time_Custom
 from .hash import Hash
+import pdb  # TEMPORARY
 
 
 class RouteBuilder():
@@ -34,7 +35,7 @@ class RouteBuilder():
     * A Location is itself a namedtuple of num, landmark, address.
     '''
     Neighbor = namedtuple('Neighbor', ['loc', 'dist'])
-    # Stop = namedtuple('Stop', ['loc', 'dist', 'pkgs'])
+    Stop = namedtuple('Stop', ['loc', 'dist', 'pkgs'])
     # # TEMPORARY
     # MaybeStop = namedtuple('MaybeStop', ['loc', 'dist', 'pkgs', 'deadline'])
     StopPlus = namedtuple('StopPlus', ['loc', 'dist', 'pkgs', 'arrival'])
@@ -198,9 +199,13 @@ class RouteBuilder():
                 if loc_num in stops_with_pkgs and
                 loc_num not in self.get_locations()]
 
-    def find_nearest(self, Stop, location_list=None):
-        '''Return nearest neighbor-with-packages to Stop passed in.'''
-        starting_from = zip(self.distances[0], self.distances[Stop.loc])
+    def find_nearest(self, Stop_or_location_num, location_list=None):
+        '''Return nearest neighbor-with-packages to Stop or location-number
+        passed in (restricted to locations in location_list, if passed in).'''
+        location_num = (Stop_or_location_num.loc
+                        if isinstance(Stop_or_location_num, RouteBuilder.Stop)
+                        else Stop_or_location_num)
+        starting_from = zip(self.distances[0], self.distances[location_num])
         eligible_location_nums = (location_list if location_list
                                   else self.unvisited_stops_with_packages())
         eligible_neighbors = [RouteBuilder.Neighbor(loc_num, dist)
@@ -273,10 +278,39 @@ class RouteBuilder():
                 nearest.loc, nearest.dist, pkgs_for_stop))
             locs.remove(nearest.loc)
 
+    def is_deadline_urgent(self, deadline):
+        '''.'''
+        two_hours_from_now = Time_Custom.clone(self.leaving_hub_at)
+        two_hours_from_now.add_time(120)
+        return deadline < two_hours_from_now
+
+    def get_index_of_last_urgent_deadline(self):
+        '''FILL ME IN.'''
+        index_of_last_urgent = None
+
+
+        # pdb.set_trace()
+
+        # TODO?: replae all this with a max idx of ([list comp of urgent pkgs])
+        for index, stop in enumerate(self.route):
+            for pkg in stop.pkgs:
+                if (pkg.props['deadline'] and
+                    self.is_deadline_urgent(pkg.props['deadline'])):
+                    index_of_last_urgent = index
+
+        return index_of_last_urgent
+
     def add_nearby_neighbors(self, acceptable_increase):
         '''Add nearby neighbors found throughout the route-so-far if doing so
-        wouldn't increase distance much (determined by acceptable_increase).'''
-        stop_index = 0
+        wouldn't increase distance much (determined by acceptable_increase).
+
+        TEMPORARY: Also only do so STARTING AFTER the last urgent deadline-pkg
+        so rename stop_index, mauybe, but definitely set it right
+        '''
+        # stop_index = 0
+
+        # first, find the last stop on route so far having an urgent deadline
+        stop_index = self.get_index_of_last_urgent_deadline() or 0
 
         while (len(self.get_packages()) < self.max_load and
                len(self.unvisited_stops_with_packages()) > 0):
@@ -327,32 +361,70 @@ class RouteBuilder():
         '''FILL ME IN/Clarify proj = projected. I MAY NOT NEED THIS.(Worth?)'''
         #     8. loop NN route and if any stop arrival > deadline, return False
         #     9. else return True
-        for maybe_stop in maybe_stops:
+        for index, maybe_stop in enumerate(maybe_stops):
             # if potential_stop.arrival > potential_stop.deadline:
-            if maybe_stop[4] > maybe_stop[3]:  # 4=arrival 3=deadline
+
+            # pdb.set_trace()
+            '''The above trace let me peek at the values and they seem OK:
+            (Pdb) [(m[0], m[1], str(m[2]), str(m[3])) for m in maybe_stops]
+            Result: [(1, [], 'None', '09:45:20'),
+            (25, [..], '10:30:00', '09:53:20'),
+            (14, [..], '10:30:00', '10:17:20')]
+
+            So I'm scratching my head at how improve_route is complaining
+            that it isn't possible to meet all deadlines.
+            It is possible my projected arrival times here are bad. But no;
+            it's 2.4 miles from hub to loc#25, which is indeed +8.0mins from
+            leave time 9:45:20, and then 7.2 miles from loc#25 -> loc#14,
+            so 24.0 minutes, so those times are good.
+
+            So why isn't improve_route finding a route that works for them?
+
+            Oh, it's also possible adding deliver-with groups is what made
+            it impossible.
+
+            Next step: see what pkgs are added later for this third route
+
+            After that: pdb.set_trace inside improve_route somehow...
+            '''
+
+
+            if index == 0:
+                continue
+
+            if maybe_stop[3] > maybe_stop[2]:  # 3=arrival 2=deadline
                 return False
         return True
 
     def construct_maybe_stops(self, locs, maybe_stops):
         '''FILL ME IN.'''
-        # first location is the hub (1); no deadline and arrival=leaving_at_hub
-        nn_route = [(1, [], None, self.leaving_at_hub)]
+        # first location is the hub (1); no deadline and arrival=leaving_hub_at
+        nn_route = [(1, [], None, self.leaving_hub_at)]
         maybe_stops_copy = maybe_stops[:]
+        locs_copy = locs[:]
         distance_so_far = 0
 
-        while len(maybe_stops_copy) > 0
-            nearest = self.find_nearest(locs)
+        current_location = 1  # start at hub
+        while len(maybe_stops_copy) > 0:
+            nearest = self.find_nearest(current_location, locs_copy)
             distance_so_far += nearest.dist
-            maybe_stop, = [maybe_stop for maybe_stop in maybe_stops
+            current_location = nearest.loc
+
+            # pdb.set_trace()
+
+            maybe_stop, = [maybe_stop for maybe_stop in maybe_stops_copy
                            if maybe_stop[0] == nearest.loc]
 
             avg_speed = 18  # self.speed_function(...)
             cumulative_minutes = 60 * (distance_so_far / avg_speed)
-            projected_arrival = Time_Custom.clone(leaving_at_hub)
+            projected_arrival = Time_Custom.clone(self.leaving_hub_at)
             projected_arrival.add_time(cumulative_minutes)
 
-            nn_route.append(*maybe_stop, projected_arrival)
-            maybe_stops_copy.remove(maybe_stops_copy.index(maybe_stop))
+            nn_route.append( (*maybe_stop, projected_arrival) )  # append tuple
+
+            # pdb.set_trace()
+            maybe_stops_copy.remove(maybe_stop)
+            locs_copy.remove(nearest.loc)
 
         return nn_route
 
@@ -376,13 +448,20 @@ class RouteBuilder():
         FURTHER NOTE that this function does not use the Truck's speed-function
         flexibility as it was not deemed worth the effort. An assumption of
         this program is the truck is always going 18mph, stops included; I made
-        it more flexible in places, but not here...
+        it more flexible in places, but not here... iu.e.
+        I built other parts of this program to be flexible via accommodating an
+        actual speed function in the future. However, I did not deem it worth
+        the effort to make this particular function flexible wrt speed function
         '''
         # 1. get stop loc#s for deadline pkgs, AND PREPEND with stop 1/hub
         locs = list(set([pkg.props['location'].num for pkg in deadline_pkgs]))
         maybe_stops = [(loc, [pkg for pkg in deadline_pkgs
                               if pkg.props['location'].num == loc])
                        for loc in locs]
+
+        # good so far- I expected loc 14 (22 in file) for pkg 6
+        # as well as loc 25 (33 in file) for pkg 25. good!
+        # pdb.set_trace()
 
         # 2. get earliest deads for those stop loc#s
         maybe_stops = [(ms[0], ms[1],
@@ -394,10 +473,12 @@ class RouteBuilder():
         # 4. compute times for each stop
         nn_route = self.construct_maybe_stops(locs, maybe_stops)
 
+        # pdb.set_trace()
+
         # 5. while helper deadlines_met is false and length > 0
-        while (not deadline_packages_guaranteed_ontime(maybe_stops) and
+        # 6. remove PACKAGES furthest from hub (and loop)
+        while (not self.deadline_packages_guaranteed_ontime(nn_route) and
                len(maybe_stops) > 0):
-        #     6. remove PACKAGES furthest from hub (and loop)
             furthest = self.sort_locs_by_hub_closeness(locs)[-1]
             pkgs_there = [pkg for pkg in deadline_pkgs
                           if pkg.props['location'].num == furthest]
@@ -411,6 +492,8 @@ class RouteBuilder():
 
         #     7. re-compute times for each stop (replacing MaybeStop)
             nn_route = self.construct_maybe_stops(locs, maybe_stops)
+
+        # pdb.set_trace()
 
         # 10. return new list that may have some pkgs excluded
         return deadline_pkgs
@@ -451,10 +534,13 @@ class RouteBuilder():
         # (starting with those furthest from the hub) until it is possible.
 
         # TODO: split out/separate truck-constraint from step I
-        self.forbid_impossible_deadline_combinations(pkgs_to_load)
+        if self.leaving_hub_at > Time_Custom(9, 45, 00):
+            self.forbid_impossible_deadline_combinations(pkgs_to_load)
         # ALSO TODO: forbid partial deliver groups again after the above, but
         # not quite: just plain remove any partial deliver goroups since if any
         # partials remain after forbid_impossib, they CAN'T all be deliv ontime
+        # wait, what am I talking about? improve_route could STILL just
+        # go to the deadline package locations first...
 
         #    IV.   Add truck-constraint packages, plus those that would be 'on
         # the way' and any that must be delivered-with.
@@ -476,8 +562,17 @@ class RouteBuilder():
         #    VI.   Look for nearby neighbors between each stop-pair on route
         # Note: ~1.6 is simply the parameter that performed well for me with
         # my sample data. It may need to be changed if given more data.
+
+        # TEMPORARY
+        # if (self.leaving_hub_at > Time_Custom(9, 45, 00)):
+        #     pdb.set_trace()
+
         acceptable_increase = 1.6
-        self.add_nearby_neighbors(acceptable_increase)
+        self.add_nearby_neighbors(acceptable_increase) # AHA! THE CULPRIT!
+
+        # TEMPORARY
+        # if (self.leaving_hub_at > Time_Custom(9, 45, 00)):
+        #     pdb.set_trace()
 
         #    VII.  Add more stops near the end of the route
         self.add_stops_at_end()
@@ -489,6 +584,13 @@ class RouteBuilder():
         stop_deadlines = [(stop.loc, self.get_earliest_deadline_for_stop(stop))
                           for stop in self.route]
         stop_deadlines = [sd for sd in stop_deadlines if sd[1]]  # remove Nones
+
+        # TEMPORARY
+        # in debugger:  [(d[0], str(d[1])) for d in stop_deadlines]
+        # [(str(s.loc), str(s.dist), [str(p) for p in s.pkgs]) for s in self.route]
+        if self.leaving_hub_at > Time_Custom(9, 45, 00):
+            pass
+            # pdb.set_trace()
 
         self.route = improve_route(self.route, self.distances, stop_deadlines,
                                    self.speed_function, self.leaving_hub_at,

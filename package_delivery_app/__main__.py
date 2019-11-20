@@ -84,7 +84,7 @@ def run_program(distance_csv, package_csv):
     say_hello()
     # Destination_Corrections = []
     Destination_Corrections = get_destination_corrections(Locations)
-    route_display_wanted = ask_if_route_display_wanted()
+    # route_display_wanted = ask_if_route_display_wanted()
     # snapshot_wanted = ask_if_snapshot_wanted()
     # package_histories_wanted = ask_if_package_histories_wanted()
     print('*' * 79, '\n')
@@ -108,6 +108,16 @@ def run_program(distance_csv, package_csv):
         packages_ready = truck.get_available_packages(
             packages, Destination_Corrections)
 
+        if len(packages_ready) == 0:
+            # advance current truck's clock to latest destination-correction
+            latest_correction = max([c.time for c in Destination_Corrections])
+            if truck.props['time'] < latest_correction:
+                truck.props['time'] = latest_correction
+
+                # try again
+                packages_ready = truck.get_available_packages(
+                    packages, Destination_Corrections)
+
         route_parameters = Hash(
             ['available_packages', packages_ready],
             ['distances', distances],
@@ -120,7 +130,8 @@ def run_program(distance_csv, package_csv):
         route_builder = RouteBuilder(route_parameters)
         route = route_builder.build_route()
 
-        if route_display_wanted and route != []:
+        # if route_display_wanted and route != []:
+        if route != []:
             route_builder.display_route()
 
         truck.load(route_builder.get_packages())

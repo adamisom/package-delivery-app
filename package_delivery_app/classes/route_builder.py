@@ -21,6 +21,12 @@ class RouteBuilder():
         - pkgs: list of packages to drop off at this location
     A Route is then simply a list of Stops.
 
+    # # TEMPORARY / considering
+    # A 'MaybeStop' is used near the beginning and is a 'Stop' plus a
+    #     - deadline: earliest deadline for this maybe-stop
+    # MaybeStops are used to ensure that all packages-with-deadlines selected
+    # in the first step of route-building can definitely be delivered on time.
+
     A 'Stop' is upgraded to a 'StopPlus' at the end.
     A StopPlus has a Location* instead of just a location number, plus it has
         - arrival: a projected arrival time (Time_Custom objec)
@@ -28,7 +34,9 @@ class RouteBuilder():
     * A Location is itself a namedtuple of num, landmark, address.
     '''
     Neighbor = namedtuple('Neighbor', ['loc', 'dist'])
-    Stop = namedtuple('Stop', ['loc', 'dist', 'pkgs'])
+    # Stop = namedtuple('Stop', ['loc', 'dist', 'pkgs'])
+    # # TEMPORARY
+    # MaybeStop = namedtuple('MaybeStop', ['loc', 'dist', 'pkgs', 'deadline'])
     StopPlus = namedtuple('StopPlus', ['loc', 'dist', 'pkgs', 'arrival'])
 
     def __init__(self, route_parameters):
@@ -51,11 +59,17 @@ class RouteBuilder():
         '''Return list of all packages currently in route.'''
         return [pkg for stop in self.route for pkg in stop.pkgs]
 
-    def sort_by_hub_closeness(self, pkgs=None):
+    def sort_pkgs_by_hub_closeness(self, pkgs=None):
         '''Return packages sorted by closeness to hub.'''
         return sorted(
             pkgs if pkgs else self.get_packages(),
             key=lambda pkg: self.distances[1][pkg.props['location'].num])
+
+    def sort_locs_by_hub_closeness(self, location_nums=None):
+        '''Return location-numbers list sorted by closeness to hub.'''
+        return sorted(
+            location_nums if location_nums else self.get_locations(),
+            key=lambda loc_num: self.distances[1][loc_num])
 
     def compute_dist(self):
         '''Return total distance of route.'''
@@ -152,7 +166,7 @@ class RouteBuilder():
         '''Return package-list whose size does not exceed self.max_load, and
         which combines lists so_far and more (note: so_far could be empty).'''
         if len(so_far) + len(more) > self.max_load:
-            closer_first = self.sort_by_hub_closeness(more)
+            closer_first = self.sort_pkgs_by_hub_closeness(more)
             max_minus_current = self.max_load - len(so_far)
             more = closer_first[:max_minus_current]
         return list(set(so_far).union(set(more)))
@@ -309,6 +323,98 @@ class RouteBuilder():
                 self.route.append(RouteBuilder.Stop(
                     nearest.loc, nearest.dist, at_this_stop))
 
+    def deadline_packages_guaranteed_ontime(self, maybe_stops):
+        '''FILL ME IN/Clarify proj = projected. I MAY NOT NEED THIS.(Worth?)'''
+        #     8. loop NN route and if any stop arrival > deadline, return False
+        #     9. else return True
+        for maybe_stop in maybe_stops:
+            # if potential_stop.arrival > potential_stop.deadline:
+            if maybe_stop[4] > maybe_stop[3]:  # 4=arrival 3=deadline
+                return False
+        return True
+
+    def construct_maybe_stops(self, locs, maybe_stops):
+        '''FILL ME IN.'''
+        # first location is the hub (1); no deadline and arrival=leaving_at_hub
+        nn_route = [(1, [], None, self.leaving_at_hub)]
+        maybe_stops_copy = maybe_stops[:]
+        distance_so_far = 0
+
+        while len(maybe_stops_copy) > 0
+            nearest = self.find_nearest(locs)
+            distance_so_far += nearest.dist
+            maybe_stop, = [maybe_stop for maybe_stop in maybe_stops
+                           if maybe_stop[0] == nearest.loc]
+
+            avg_speed = 18  # self.speed_function(...)
+            cumulative_minutes = 60 * (distance_so_far / avg_speed)
+            projected_arrival = Time_Custom.clone(leaving_at_hub)
+            projected_arrival.add_time(cumulative_minutes)
+
+            nn_route.append(*maybe_stop, projected_arrival)
+            maybe_stops_copy.remove(maybe_stops_copy.index(maybe_stop))
+
+        return nn_route
+
+    def forbid_impossible_deadline_combinations(self, deadline_pkgs):
+        '''Return package-list which is sure to meet all deadlines;
+        if it was already sure to be possible, no changes will be made.
+
+        As input it takes a list of only packages that have deadlines.
+
+        The reason that considering only deadline packages can guarantee that
+        they still all get delivered on time when more stops and packages are
+        added later is because there is at least one route that improve_route
+        will find in all its permutations that meets deadlines: the one where
+        all deadline stops are visited first before any others.
+
+        Note that the naive nearest-neighbors check used by this method is only
+        a quick-n-dirty way to assess whether all deadlines could be met early
+        on in the route-building process--before a proper route is made at
+        all, let alone before it's handed over to improve_route.
+
+        FURTHER NOTE that this function does not use the Truck's speed-function
+        flexibility as it was not deemed worth the effort. An assumption of
+        this program is the truck is always going 18mph, stops included; I made
+        it more flexible in places, but not here...
+        '''
+        # 1. get stop loc#s for deadline pkgs, AND PREPEND with stop 1/hub
+        locs = list(set([pkg.props['location'].num for pkg in deadline_pkgs]))
+        maybe_stops = [(loc, [pkg for pkg in deadline_pkgs
+                              if pkg.props['location'].num == loc])
+                       for loc in locs]
+
+        # 2. get earliest deads for those stop loc#s
+        maybe_stops = [(ms[0], ms[1],
+                        min([pkg.props['deadline'] for pkg in deadline_pkgs
+                             if pkg.props['location'].num == ms[0]]))
+                       for ms in maybe_stops]
+
+        # 3. construct NN route (IT NEED NOT go back to hub-lol! why would it!)
+        # 4. compute times for each stop
+        nn_route = self.construct_maybe_stops(locs, maybe_stops)
+
+        # 5. while helper deadlines_met is false and length > 0
+        while (not deadline_packages_guaranteed_ontime(maybe_stops) and
+               len(maybe_stops) > 0):
+        #     6. remove PACKAGES furthest from hub (and loop)
+            furthest = self.sort_locs_by_hub_closeness(locs)[-1]
+            pkgs_there = [pkg for pkg in deadline_pkgs
+                          if pkg.props['location'].num == furthest]
+
+            locs.remove(furthest)
+            maybe_stop, = [ms for ms in maybe_stops if ms[0] == furthest]
+            maybe_stops.remove(maybe_stop)
+
+            # KEY (subtract furthest pkgs from deadline_pkgs):
+            deadline_pkgs = list(set(deadline_pkgs) - set(pkgs_there))
+
+        #     7. re-compute times for each stop (replacing MaybeStop)
+            nn_route = self.construct_maybe_stops(locs, maybe_stops)
+
+        # 10. return new list that may have some pkgs excluded
+        return deadline_pkgs
+
     def build_route(self):
         '''Return a delivery route (list of stops).'''
         if len(self.ready_pkgs) == 0:
@@ -318,12 +424,12 @@ class RouteBuilder():
 
         groups = self.grouped_deliver_with_constraints()
 
-        #    I.    Add urgent packages and truck-constraint packages first.
+        #    I.    Add urgent packages first[, and those on the way.]?
         # If truck is leaving after its initial run, get non-urgent packages
         # with deadlines too. Also add any that must be delivered with those.
         # Note that 8:00am is the initial run for a truck, and this is an
         # assumption also made by the Truck class.
-        # Also (unrelated), note that no Stops for the route are created yet.
+        # Also--unrelated--note that no Stops for the route are created yet.
         pkgs_to_load = self.get_most_urgent_packages()
         pkgs_to_load = self.forbid_overfilling_load([], pkgs_to_load)
 
@@ -340,7 +446,20 @@ class RouteBuilder():
         pkgs_to_load = self.forbid_overfilling_load(pkgs_to_load, more_to_load)
         pkgs_to_load = self.forbid_partial_deliver_groups(groups, pkgs_to_load)
 
-        #    III.  Add other deliver-with groups that will fit, smallest-first,
+        #    III.  Check whether it is possible to deliver all of the deadline
+        # packages in pkgs_to_load on time, and if not, remove one at a time
+        # (starting with those furthest from the hub) until it is possible.
+
+        # TODO: split out/separate truck-constraint from step I
+        self.forbid_impossible_deadline_combinations(pkgs_to_load)
+        # ALSO TODO: forbid partial deliver groups again after the above, but
+        # not quite: just plain remove any partial deliver goroups since if any
+        # partials remain after forbid_impossib, they CAN'T all be deliv ontime
+
+        #    IV.   Add truck-constraint packages, plus those that would be 'on
+        # the way' and any that must be delivered-with.
+
+        #    IV.   Add other deliver-with groups that will fit, smallest-first,
         # then remove packages in remaining groups from consideration. The idea
         # for the first part of that is to get deliver-with packages out of the
         # way as soon as possible, and the idea for the second part is to not
@@ -351,23 +470,20 @@ class RouteBuilder():
         # rather than nearest-neighbors / distance.
         pkgs_to_load = self.add_more_deliverwith_groups(pkgs_to_load, groups)
 
-        #    IV.   Construct stops from pkgs_to_load and add to route.
+        #    V.    Construct stops from pkgs_to_load and add to route.
         self.construct_stops(pkgs_to_load)
 
-        #    V.    Look for nearby neighbors between each stop-pair on route
+        #    VI.   Look for nearby neighbors between each stop-pair on route
         # Note: ~1.6 is simply the parameter that performed well for me with
         # my sample data. It may need to be changed if given more data.
         acceptable_increase = 1.6
         self.add_nearby_neighbors(acceptable_increase)
 
-        #    VI.   Add more stops near the end of the route
+        #    VII.  Add more stops near the end of the route
         self.add_stops_at_end()
 
-        #    VII.  Re-order stops on route to get shorter total distance,
-        # so long as deadlines wouldn't be missed. Note that the code up to
-        # now doesn't itself guarantee deadlines will be missed, but luckily
-        # it is a natural place to check for deadlines in the same place
-        # (namely, improve_route) we generate permutations and select the best.
+        #    VIII. Re-order stops on route to get shorter total distance,
+        # so long as deadlines wouldn't be missed.
         self.add_final_stop()
 
         stop_deadlines = [(stop.loc, self.get_earliest_deadline_for_stop(stop))
@@ -378,6 +494,6 @@ class RouteBuilder():
                                    self.speed_function, self.leaving_hub_at,
                                    RouteBuilder.Stop)
 
-        #    VIII. Convert Stops on route to StopPluses and return route
+        #    IX.   Convert Stops on route to StopPluses and return route
         self.convert_to_stopplus()
         return self.route

@@ -39,7 +39,7 @@ class RouteBuilder():
         self.Locations = route_parameters['Locations']
         self.speed_function = route_parameters['speed_function']
         self.starting_location = route_parameters['starting_location']
-        self.initial_leave = route_parameters['initial_leave_time']
+        self.leaving_hub_at = route_parameters['leaving_hub_at']
 
         self.route = []
 
@@ -69,9 +69,9 @@ class RouteBuilder():
         '''Display one stop.'''
         pkgs = ',\t'.join(['Package #' + str(p.props['ID']) for p in
                            sorted(stop.pkgs, key=lambda p: p.props['ID'])])
-        print(f'Stop {self.route.index(stop)+1}: going to '
-              f'location #{stop.loc}, which is {stop.dist} miles from '
-              f'the last stop, and has these packages:\n\t{pkgs}')
+        print(f'Stop {self.route.index(stop)+1}: truck is projected to arrive '
+              f'by {str(stop.arrival)} to {stop.loc}, which is {stop.dist} '
+              f'miles from the last stop, and has these packages:\n\t{pkgs}')
 
     def display_route(self, called_by='', show_load=False):
         '''Display route.'''
@@ -214,7 +214,7 @@ class RouteBuilder():
         '''Return projected arrival time for a stop on a route.'''
         index = self.route.index(stop)
         if index == 0:
-            return self.initial_leave
+            return self.leaving_hub_at
         previous = self.route[index - 1]
         avg_speed = self.speed_function(previous.loc, stop.loc)
         minutes = 60 * (stop.dist / avg_speed)
@@ -322,7 +322,7 @@ class RouteBuilder():
         pkgs_to_load = self.forbid_overfilling_load([], pkgs_to_load)
 
         more_to_load = self.get_truck_constraint_packages()
-        if self.initial_leave > Time_Custom(8, 00, 00):
+        if self.leaving_hub_at > Time_Custom(8, 00, 00):
             more_to_load += self.get_other_deadline_packages()
         pkgs_to_load = self.forbid_overfilling_load(pkgs_to_load, more_to_load)
 
@@ -369,7 +369,7 @@ class RouteBuilder():
         stop_deadlines = [sd for sd in stop_deadlines if sd[1]]  # remove Nones
 
         self.route = improve_route(self.route, self.distances, stop_deadlines,
-                                   self.speed_function, self.initial_leave,
+                                   self.speed_function, self.leaving_hub_at,
                                    RouteBuilder.Stop)
 
         #    VIII. Convert Stops on route to StopPluses and return route

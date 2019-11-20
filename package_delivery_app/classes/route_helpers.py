@@ -2,7 +2,7 @@ from itertools import permutations
 from .time_custom import Time_Custom
 
 
-class ImproveRoute_Min_ValueError(BaseException):
+class ImproveRoute_Min_ValueError(ValueError):
     pass
 
 
@@ -47,6 +47,14 @@ def meets_deadlines(partial_route, distances, deadlines, speed, leave_time):
             minutes_to_get_there = 60 * (distance_so_far / speed)
             projected_arrival = Time_Custom.clone(leave_time)
             projected_arrival.add_time(minutes_to_get_there)
+
+            # TEMPORARY
+            # if leave_time > Time_Custom(9, 45, 0):
+            #     print('\nINSIDE meets_deadlines for problematic truck/9:45, '
+            #           f'minutes_to_get_there is {minutes_to_get_there}, '
+            #           f'projected_arrival is {projected_arrival}',
+            #           f'distance_so_far is {distance_so_far}, '
+            #           f'and deadlines are {deadlines}\n')
 
             deadline, = [d[1] for d in deadlines if stop[0] == d[0]]
             if projected_arrival > deadline:
@@ -97,6 +105,11 @@ def improve_route(route, distances, deadlines, speed, leave, Stop_namedtuple):
         # a full subroute for distance calculation must include start and end
         subroutes = [[route[index], *ordering, route[end]]
                      for ordering in new_orderings]
+
+        # TEMPORARY
+        # if leave > Time_Custom(9, 45, 00):
+        # print('\nThe problematic improve_route--seriously, why TF, though?--'
+        #       f'where WITH_UPDATED_DISTANCES is {subroutes}\n\n and...')
 
         with_updated_distances = [update_subroute_distances(
                                     subroute, distances)

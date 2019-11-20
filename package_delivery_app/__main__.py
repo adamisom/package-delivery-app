@@ -35,9 +35,8 @@ def number_delivered(packages):
 def display_packages_with_history(packages):
     '''Display each package and its delivery-status histories.'''
     sorted_pkgs_with_history = '\n'.join(
-        [(str(pkg).replace('PkgState.', '') + '\n' + '\t' +
-          pkg.history_string('\t'))
-        for pkg in sorted(packages, key=lambda p: p.props['ID'])])
+        [(str(p).replace('PkgState.', '') + '\n\t' + p.history_string('\t'))
+         for p in sorted(packages, key=lambda p: p.props['ID'])])
 
     print(f'Packages and their histories:\n{sorted_pkgs_with_history}\n')
     print('*' * 79, '\n')
@@ -83,10 +82,11 @@ def run_program(distance_csv, package_csv):
     distances, Locations, packages = load_data(distance_csv, package_csv)
 
     say_hello()
-    Destination_Corrections = get_destination_corrections(Locations)
+    Destination_Corrections = []
+        # get_destination_corrections(Locations)
     route_display_wanted = ask_if_route_display_wanted()
-    snapshot_wanted = ask_if_snapshot_wanted()
-    package_histories_wanted = ask_if_package_histories_wanted()
+    # snapshot_wanted = ask_if_snapshot_wanted()
+    # package_histories_wanted = ask_if_package_histories_wanted()
     print('*' * 79, '\n')
 
     number_of_trucks = 3
@@ -98,28 +98,33 @@ def run_program(distance_csv, package_csv):
     while not all_packages_delivered(packages):
         number_delivered_before_loop = number_delivered(packages)
 
-        for truck in trucks:
+        # for truck in trucks:
 
-            packages_ready = truck.get_available_packages(
-                packages, Destination_Corrections)
+        # send out whichever truck arrives to the hub first, or the lower-ID
+        # truck if they are ready to leave at the same time (e.g. 8 AM)
+        truck = sorted(trucks,
+                       key=lambda t: (t.props['time'], t.props['ID']))[0]
 
-            route_parameters = Hash(
-                ['available_packages', packages_ready],
-                ['distances', distances],
-                ['max_load', Truck.max_packages],
-                ['truck_number', truck.props['ID']],
-                ['Locations', Locations],
-                ['speed_function', Truck.speed_function],
-                ['starting_location', Truck.starting_location],
-                ['initial_leave_time', Truck.first_delivery_time])
-            route_builder = RouteBuilder(route_parameters)
-            route = route_builder.build_route()
+        packages_ready = truck.get_available_packages(
+            packages, Destination_Corrections)
 
-            if route_display_wanted and route != []:
-                route_builder.display_route()
+        route_parameters = Hash(
+            ['available_packages', packages_ready],
+            ['distances', distances],
+            ['max_load', Truck.max_packages],
+            ['truck_number', truck.props['ID']],
+            ['Locations', Locations],
+            ['speed_function', Truck.speed_function],
+            ['starting_location', Truck.starting_location],
+            ['leaving_hub_at', Truck.first_delivery_time])  #truck.props['time']])
+        route_builder = RouteBuilder(route_parameters)
+        route = route_builder.build_route()
 
-            truck.load(route_builder.get_packages())
-            truck.deliver(route)
+        if route_display_wanted and route != []:
+            route_builder.display_route()
+
+        truck.load(route_builder.get_packages())
+        truck.deliver(route)
 
         number_delivered_after_loop = number_delivered(packages)
         if not number_delivered_after_loop > number_delivered_before_loop:
@@ -132,11 +137,11 @@ def run_program(distance_csv, package_csv):
     print('\n')
     print('*' * 79)
 
-    if snapshot_wanted:
-        handle_snapshot_request(packages)
+    # if snapshot_wanted:
+    #     handle_snapshot_request(packages)
 
-    if package_histories_wanted:
-        display_packages_with_history(packages)
+    # if package_histories_wanted:
+    #     display_packages_with_history(packages)
 
 
 if __name__ == '__main__':

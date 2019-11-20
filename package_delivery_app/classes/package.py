@@ -82,9 +82,9 @@ class Package():
 
     def history_string(self, delimiter=None):
         '''Return print-statement-friendly history of package.'''
-        return f'\n{delimiter}'.join([' at:\t'.join((record.state.name,
-                                                     str(record.time)))
-                          for record in self.props['history']])
+        return f'\n{delimiter}'.join(
+            [' at:\t'.join((record.state.name, str(record.time)))
+             for record in self.props['history']])
 
     def update_late_as_arrived(self, time):
         '''Update a late-arriving package to indicate it is now at the hub.'''

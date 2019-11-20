@@ -22,31 +22,31 @@ def say_hello():
 
 
 def ask_if_route_display_wanted():
-  '''Return whether user wants to view each route and its stops.'''
-  user_says = input('Would you like to see each route that is calculated?\n')
-  return user_says.lower().strip() in ('y', 'yes')
+    '''Return whether user wants to view each route and its stops.'''
+    user_says = input('Would you like to see each route that is calculated?\n')
+    return user_says.lower().strip() in ('y', 'yes')
 
 
 def ask_if_snapshot_wanted():
-  '''Return whether user wants a snapshot.'''
-  user_says = input('Would you like to generate a snapshot at the end?\n'
-                    'If so, then once the routes are calculated (and '
-                    'displayed, if you wanted that),\nyou\'ll be '
-                    'asked to provide a time for the snapshot.\nThat snapshot '
-                    'will appear in the console here, and will also be stored '
-                    'in\na new file "package_snapshot.txt" in the directory '
-                    'you are running this from.\nIf you would '
-                    'like a snapshot later, press "y" or "yes", then Enter.\n'
-                    'Otherwise, press any other key, like Enter or "n".\n')
-  return user_says.lower().strip() in ('y', 'yes')
+    '''Return whether user wants a snapshot.'''
+    says = input('Would you like to generate a snapshot at the end?\n'
+                 'If so, then once the routes are calculated (and '
+                 'displayed, if you wanted that),\nyou\'ll be '
+                 'asked to provide a time for the snapshot.\nThat snapshot '
+                 'will appear in the console here, and will also be stored '
+                 'in\na new file "package_snapshot.txt" in the directory '
+                 'you are running this from.\nIf you would '
+                 'like a snapshot later, press "y" or "yes", then Enter.\n'
+                 'Otherwise, press any other key, like Enter or "n".\n')
+    return says.lower().strip() in ('y', 'yes')
 
 
 def ask_if_package_histories_wanted():
-  '''Return whether user wants to view all package histories.'''
-  user_says = input('Would you like to see all packages and their histories '
-                    'at the end?\n(This will appear after a snapshot, if you '
-                    'asked for one.)\n')
-  return user_says.lower().strip() in ('y', 'yes')
+    '''Return whether user wants to view all package histories.'''
+    user_says = input('Would you like to see all packages and their histories '
+                      'at the end?\n(This will appear after a snapshot, if '
+                      'you asked for one.)\n')
+    return user_says.lower().strip() in ('y', 'yes')
 
 
 def give_user_snapshot_instructions():
@@ -89,7 +89,7 @@ def handle_snapshot_request(packages):
     '''Listen for user input and generate snapshot when input is valid.'''
     give_user_snapshot_instructions()
 
-    user_requested_time = input('Whenever you\'re ready...  ')
+    user_requested_time = input('Whenever you\'re ready, enter a time\n')
     while not validate_length(user_requested_time):
         print('\nPlease try again. Please enter two-digit hour, colon, '
               'two-digit minute.')
@@ -99,7 +99,7 @@ def handle_snapshot_request(packages):
     while not validate_values(time_parts):
         print('\nPlease try again. Please enter an hour from 0 to 23, minute '
               'from 0 to 59, and second (if entered) also from 0 to 59.')
-        user_requested_time = input('Whenever you\'re ready...  ')
+        user_requested_time = input('Whenever you\'re ready, enter a time\n')
 
     print(f'Alright! You asked for a snapshot at time {user_requested_time}')
     make_snapshot(Time_Custom(*time_parts), packages)
@@ -165,8 +165,8 @@ def ask_user_if_they_have_correction_information():
     '''Ask user if they have destination-correction information.'''
     print('If you have any destination-corrections for packages, you are in '
           'the right place.\nIf you don\'t have any corrections, no problem--'
-          'just type "q" or "quit" and hit Enter.\nIf you do have information, '
-          'type any other key--like the Enter key.\n'
+          'just type "q" or "quit" and hit Enter.\nIf you do have information,'
+          ' type any other key--like the Enter key.\n'
           'Just keep in mind that if your distance file indicates that any '
           'packages\nare known to have the wrong destination, but you do not '
           'supply a correction,\nthose packages will not get delivered. '

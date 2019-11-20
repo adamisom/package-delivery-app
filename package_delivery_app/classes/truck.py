@@ -53,10 +53,6 @@ class Truck():
             if (self.props['time'] > anticipated_arrival and
                     pkg.props['state'].name == 'LATE_ARRIVAL'):
 
-                # TEMPORARY
-                # print("truck update_late if met, with self.props['time'] "
-                #       f"{self.props['time']} ")
-
                 # anticipated_arrival will be used in the new History_Record,
                 # which means we implicitly assume late arrivals arrive
                 # precisely when we were told they would (and not even later!)
@@ -92,16 +88,12 @@ class Truck():
         at_hub = [pkg for pkg in all_packages
                   if pkg.props['state'].name == 'AT_HUB']
 
-        # TEMPORARY
-        ids_at_hub = ','.join([str(pkg.props['ID']) for pkg in at_hub])
-        print(f'\nFrom truck get_avail.., at_hub is: {ids_at_hub}')
-        print(f"\nAND the TIME + ID of this truck are {self.props['ID']}, "
-              f" {self.props['time']}")
-
         ID = self.props['ID']
+
         can_go = [pkg for pkg in all_packages
                   if (pkg.props['special_note']['truck_number'] is None or
                       pkg.props['special_note']['truck_number'] == ID)]
+
         return [pkg for pkg in all_packages
                 if pkg in at_hub and pkg in can_go]
 

@@ -1,9 +1,8 @@
 from itertools import permutations
 from .time_custom import Time_Custom
-import pdb  # TEMPORARY
 
 
-class ImproveRoute_Min_ValueError(ValueError):
+class ImproveRoute_Min_ValueError(BaseException):
     pass
 
 
@@ -37,37 +36,16 @@ def meets_deadlines(partial_route, distances, deadlines, speed, leave_time):
         return True
 
     speed = 18
-
     distance_so_far = 0
-
-    # TEMPORARY
-    # if (leave_time > Time_Custom(9, 45, 00) and
-    #     len([stop for stop in partial_route
-    #          if stop[0] in [d[0] for d in deadlines]]) > 0):
-    # if (leave_time > Time_Custom(9, 45, 00) and
-    #     len([stop for stop in partial_route if stop[0] == 14]) > 0):
-    #     pdb.set_trace()
 
     for stop in partial_route:
         distance_so_far += stop[1]  # stop[1] is distance-from-previous-stop
-
-        # TEMPORARY
-        # if leave_time > Time_Custom(9, 45, 00):
-        #     pdb.set_trace()
 
         # stop[0] and d[0] are both location-numbers
         if stop[0] in [d[0] for d in deadlines]:
             minutes_to_get_there = 60 * (distance_so_far / speed)
             projected_arrival = Time_Custom.clone(leave_time)
             projected_arrival.add_time(minutes_to_get_there)
-
-            # TEMPORARY
-            # if leave_time > Time_Custom(9, 45, 0):
-            #     print('\nINSIDE meets_deadlines for problematic truck/9:45, '
-            #           f'minutes_to_get_there is {minutes_to_get_there}, '
-            #           f'projected_arrival is {projected_arrival}',
-            #           f'distance_so_far is {distance_so_far}, '
-            #           f'and deadlines are {deadlines}\n')
 
             deadline, = [d[1] for d in deadlines if stop[0] == d[0]]
             if projected_arrival > deadline:
@@ -119,11 +97,6 @@ def improve_route(route, distances, deadlines, speed, leave, Stop_namedtuple):
         subroutes = [[route[index], *ordering, route[end]]
                      for ordering in new_orderings]
 
-        # TEMPORARY
-        # if leave > Time_Custom(9, 45, 00):
-        # print('\nThe problematic improve_route--seriously, why TF, though?--'
-        #       f'where WITH_UPDATED_DISTANCES is {subroutes}\n\n and...')
-
         with_updated_distances = [update_subroute_distances(
                                     subroute, distances)
                                   for subroute in subroutes]
@@ -136,12 +109,11 @@ def improve_route(route, distances, deadlines, speed, leave, Stop_namedtuple):
         with_distance_sums = [(subroute, sum([x[1] for x in subroute]))
                               for subroute in with_none_late]
 
-        try:
-            shortest = min(with_distance_sums,
-                           key=lambda candidate_route: candidate_route[1])
-        except ValueError:  # probably min() was given an empty list
+        if not len(with_distance_sums) > 0:
             raise ImproveRoute_Min_ValueError('No route exists that would '
                                               'meet all remaining deadlines.')
+        shortest = min(with_distance_sums,
+                       key=lambda candidate_route: candidate_route[1])
 
         route = route[:index] + list(shortest[0]) + route[end+1:]
 

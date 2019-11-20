@@ -82,11 +82,10 @@ def run_program(distance_csv, package_csv):
     distances, Locations, packages = load_data(distance_csv, package_csv)
 
     say_hello()
-    # Destination_Corrections = []
     Destination_Corrections = get_destination_corrections(Locations)
-    # route_display_wanted = ask_if_route_display_wanted()
-    # snapshot_wanted = ask_if_snapshot_wanted()
-    # package_histories_wanted = ask_if_package_histories_wanted()
+    route_display_wanted = ask_if_route_display_wanted()
+    snapshot_wanted = ask_if_snapshot_wanted()
+    package_histories_wanted = ask_if_package_histories_wanted()
     print('*' * 79, '\n')
 
     number_of_trucks = 3
@@ -98,8 +97,6 @@ def run_program(distance_csv, package_csv):
     while not all_packages_delivered(packages):
         number_delivered_before_loop = number_delivered(packages)
 
-        # for truck in trucks:
-
         # send out whichever truck arrives to the hub first, or the lower-ID
         # truck if they are ready to leave at the same time (e.g. 8 AM)
         truck = sorted(trucks,
@@ -108,13 +105,14 @@ def run_program(distance_csv, package_csv):
         packages_ready = truck.get_available_packages(
             packages, Destination_Corrections)
 
-        if len(packages_ready) == 0:
-            # advance current truck's clock to latest destination-correction
+        # if truck does not see any packages ready, have truck wait until the
+        # time of the last destination-correction, then re-check for packages
+        if (len(packages_ready) == 0 and
+            len(Destination_Corrections) > 0):
             latest_correction = max([c.time for c in Destination_Corrections])
             if truck.props['time'] < latest_correction:
                 truck.props['time'] = latest_correction
 
-                # try again
                 packages_ready = truck.get_available_packages(
                     packages, Destination_Corrections)
 
@@ -130,8 +128,7 @@ def run_program(distance_csv, package_csv):
         route_builder = RouteBuilder(route_parameters)
         route = route_builder.build_route()
 
-        # if route_display_wanted and route != []:
-        if route != []:
+        if route_display_wanted and route != []:
             route_builder.display_route()
 
         truck.load(route_builder.get_packages())
@@ -148,11 +145,11 @@ def run_program(distance_csv, package_csv):
     print('\n')
     print('*' * 79)
 
-    # if snapshot_wanted:
-    #     handle_snapshot_request(packages)
+    if snapshot_wanted:
+        handle_snapshot_request(packages)
 
-    # if package_histories_wanted:
-    #     display_packages_with_history(packages)
+    if package_histories_wanted:
+        display_packages_with_history(packages)
 
 
 if __name__ == '__main__':

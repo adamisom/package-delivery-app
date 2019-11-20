@@ -32,12 +32,12 @@ Tip: use Python's \_\_doc\_\_ function to learn more about a package or class.
 ## More Information
 #### Purposes
  - Satisfy requirements for a Western Governors University course.
- - Go beyond those requirements and explore building what I hope is a small but professional-grade Python application.
+ - Go beyond those requirements; explore building a "real" Python application.
 
 #### Notable requirements & features:
 - Route takes into account several kinds of constraints, such as: deadlines, packages needing to have their destination corrected (having the wrong destination initially), sets of packages needing to go together, and so on.
 - Users can request snapshots of the delivery status of each package
-- Custom Hash and time classes are used. The Hash class was designed to (nearly) replicate Python dictionaries and was a course requirement.
+- Custom Hash and time classes are used. The Hash class was designed to (nearly) replicate Python dictionaries (a Hash class of some kind was a course requirement).
 
 #### Notably unrealistic assumptions:
 - Trucks maintain a constant speed of 18 miles per hour at all times.
@@ -66,8 +66,6 @@ It would be pretty cool for this to allow real-time updates, to track when truck
 This project adheres to pep8.
 
 Idiomatic or 'Pythonic' ways were preferred, to the extent I've successfully learned them. Possible exception: I often prefer from/import for imports.
-
-I aimed for clarity in organization at the package, module, and method/function level; in docstrings and other comments; and in naming of variables, methods/functions and classes. I aimed to keep each methods/function brief, for it to do one type of thing, and for all its logic to be on the "same level". If you read all the code and say 'WTF' more than a few times, I guess I've failed to achieve that clarity.
 
 ## Logo
 The logo is a composite of 'noncommercial use with modification' images, except the Python logo which I don't think has the 'with modification' qualifier.

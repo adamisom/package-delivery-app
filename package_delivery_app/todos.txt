@@ -1,12 +1,20 @@
 TASKS LEFT before I leave this project alone:
 	1 x ensure it now works w/tests
 	2 o refactor/improve my new methods/r_b functionality including comments, starting at is_deadline_urgent / 272
-	3 o slightly improve d-c to tell user to type 'no'/enter, as well as add newlines at 'it must match' and 'the exception' in the d-c instructions for locations; also delete my unneeded print statements like get_avail.. 
+	including refactoring forbid_impos to return pkgs list
+	also, fiddle with acceptable_increase again
+	3 x slightly improve d-c to tell user to type 'no'/enter, as well as add newlines at 'it must match' and 'the exception' in the d-c instructions for locations; also delete my unneeded print statements like get_avail.. 
 	4 o see if I can make it shorter, esp. at end it's taking long trips back to hub
 	5 o update/verify readme AND package-version
 	6 o FINISH WRITEUP
 	7 o submit
 
+OH YEAH. 
+A problem I noticed erlier is my forbid_impossible
+returns but that return goes nowhere, so it might 
+as well not exist. which makes me wonder, do I even 
+need all that? if I can easily salvage it then yes,
+since code would be buggy w/o it. 
 ===========
 TODO list
 For better code but ~same functionality:

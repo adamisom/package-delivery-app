@@ -166,7 +166,7 @@ def ask_user_if_they_have_correction_information():
     print('If you have any destination-corrections for packages, you are in '
           'the right place.\nIf you don\'t have any corrections, no problem--'
           'just type "q" or "quit" and hit Enter.\nIf you do have information,'
-          ' type any other key--like the Enter key.\n'
+          ' type any other key--like "y" (for yes), or the Enter key.\n'
           'Just keep in mind that if your distance file indicates that any '
           'packages\nare known to have the wrong destination, but you do not '
           'supply a correction,\nthose packages will not get delivered. '
@@ -205,8 +205,8 @@ def give_user_correction_instructions():
           '\n2. If you enter a time, it must be "military time".'
           '\n3. That means "AM" and "PM" are ignored.'
           '\n4. If you enter a location, then whether that is a '
-          'landmark or street address, it must match exactly what '
-          'the package csv file had for that package. The exception is '
+          'landmark or street address,\nit must match exactly what '
+          'the package csv file had for that package.\nThe exception is '
           'that the (five-digit) zip code is optional.\n')
 
 
@@ -384,7 +384,8 @@ def get_destination_corrections(Locations):
                   Destination_Correction(*item_or_quit))
 
         ask_for_more = input('\nWould you like to add another? Type "y" '
-                             'or "yes" if so.\nOtherwise, hit Enter.\n')
+                             'or "yes" if so.\nOtherwise, hit Enter or '
+                             'any other key, like "n" for no.\n')
         user_has_information = ask_for_more.lower().strip() in ('y', 'yes')
 
     print('*' * 79, '\n')

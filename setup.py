@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="package-delivery-app",
-    version="0.9.2",
+    version="0.9.3",
     author="Adam Isom",
     author_email="adam.r.isom@gmail.com",
     description="A simulation of package delivery with constraints",

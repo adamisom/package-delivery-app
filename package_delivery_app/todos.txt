@@ -1,7 +1,10 @@
 FINAL coding block. Jesus Christ.
 
 Subblock 20: update d-c handling to not see correct address if truck time not > d-c time, if it exists; also change 'urgent' pkgs to be those <2h after leave and replace references to 9am, 10am in route_builder; check it works then also re-add in the single-line main change that fixes the 8am rb issue, rerun to see my familiar error
-	est. 30m	9:00-9:30pm
+	est. 30m	8:48-9:18pm
+
+NOTE: I cannot fully test whether my update_corrected_packages update worked because I ALSO need to make truck time 'pass' even when they have no packages to grab and I can 'hack' that by having a truck just WAIT if there are only dest-corrs by waiting until the last one is known, and implement "waiting" to setting the time equal to a helper that returns the latest d-c time.
+So I'm waiting until Subblock 21's code update is done because THEN I'll be able to run trucks later WITHOUT error and so THEN I can have a truck wait even later (until 10:20)
 
 Subblock 21: add new r_b helper and new step III (move others up). Here's the idea:
 

@@ -119,10 +119,12 @@ class RouteBuilder():
         return sorted(pkgs_from_IDs, key=lambda lst: len(lst))
 
     def get_most_urgent_packages(self):
-        '''Return list of packages left with deadline before 10:00 AM.'''
+        '''Return list of packages left with deadline in 2 hours or less.'''
+        two_hours_from_now = Time_Custom.clone(self.leaving_hub_at)
+        two_hours_from_now.add_time(120)
         return [pkg for pkg in self.ready_pkgs
                 if pkg.props['deadline'] and
-                pkg.props['deadline'] <= Time_Custom(10, 00, 00)]
+                pkg.props['deadline'] <= two_hours_from_now]
 
     def get_truck_constraint_packages(self):
         '''Return list of packages left that must go on this truck.'''
@@ -131,10 +133,12 @@ class RouteBuilder():
                 pkg.props['special_note']['truck_number'] == self.truck_num]
 
     def get_other_deadline_packages(self):
-        '''Return list of packages left with deadline after 10:00 AM.'''
+        '''Return list of packages left with deadline over 2 hours from now.'''
+        two_hours_from_now = Time_Custom.clone(self.leaving_hub_at)
+        two_hours_from_now.add_time(120)
         return [pkg for pkg in self.ready_pkgs
                 if pkg.props['deadline'] and
-                pkg.props['deadline'] > Time_Custom(10, 00, 00)]
+                pkg.props['deadline'] > two_hours_from_now]
 
     def get_packages_on_the_way(self, pkg_load):
         '''Return list of packages destined for same place as any package in
@@ -315,9 +319,11 @@ class RouteBuilder():
         groups = self.grouped_deliver_with_constraints()
 
         #    I.    Add urgent packages and truck-constraint packages first.
-        # If truck is leaving at or after 9am, get packages with non-urgent
-        # deadlines too. Also add any that must be delivered with those.
-        # Note that no Stops for the route are being created yet.
+        # If truck is leaving after its initial run, get non-urgent packages
+        # with deadlines too. Also add any that must be delivered with those.
+        # Note that 8:00am is the initial run for a truck, and this is an
+        # assumption also made by the Truck class.
+        # Also (unrelated), note that no Stops for the route are created yet.
         pkgs_to_load = self.get_most_urgent_packages()
         pkgs_to_load = self.forbid_overfilling_load([], pkgs_to_load)
 
@@ -349,8 +355,8 @@ class RouteBuilder():
         self.construct_stops(pkgs_to_load)
 
         #    V.    Look for nearby neighbors between each stop-pair on route
-        # PLEASE NOTE: ~1.6 is simply the parameter that performed well for me
-        # with my sample data. It may need to be changed if given more data!
+        # Note: ~1.6 is simply the parameter that performed well for me with
+        # my sample data. It may need to be changed if given more data.
         acceptable_increase = 1.6
         self.add_nearby_neighbors(acceptable_increase)
 

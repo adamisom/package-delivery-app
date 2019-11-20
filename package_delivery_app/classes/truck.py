@@ -65,12 +65,18 @@ class Truck():
     def update_corrected_packages(self, all_packages, destination_corrections):
         '''Update all packages that had a known wrong-destination at start of day
         but which have now been corrected, i.e., which can now be delivered.'''
-        wrong_destinations = [p for p in all_packages
-                              if p.props['state'].name == 'WRONG_DESTINATION']
+        wrong_destin_pkgs = [p for p in all_packages
+                             if p.props['state'].name == 'WRONG_DESTINATION']
 
-        for pkg in wrong_destinations:
-            if pkg.props['ID'] in [c.pkg_id for c in destination_corrections]:
-                updated_destination, = [c for c in destination_corrections
+        for pkg in wrong_destin_pkgs:
+            # A destination-correction can indicate that the correct address
+            # will be know later so we must exclude corrections not known yet.
+            knowable_corrections = [c for c in destination_corrections
+                                    if c.time is None or
+                                    self.props['time'] >= c.time]
+
+            if pkg.props['ID'] in [c.pkg_id for c in knowable_corrections]:
+                updated_destination, = [c for c in knowable_corrections
                                         if c.pkg_id == pkg.props['ID']]
 
                 if updated_destination.location is not None:

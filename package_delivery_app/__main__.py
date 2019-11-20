@@ -82,8 +82,8 @@ def run_program(distance_csv, package_csv):
     distances, Locations, packages = load_data(distance_csv, package_csv)
 
     say_hello()
-    Destination_Corrections = []
-        # get_destination_corrections(Locations)
+    # Destination_Corrections = []
+    Destination_Corrections = get_destination_corrections(Locations)
     route_display_wanted = ask_if_route_display_wanted()
     # snapshot_wanted = ask_if_snapshot_wanted()
     # package_histories_wanted = ask_if_package_histories_wanted()
@@ -116,7 +116,7 @@ def run_program(distance_csv, package_csv):
             ['Locations', Locations],
             ['speed_function', Truck.speed_function],
             ['starting_location', Truck.starting_location],
-            ['leaving_hub_at', Truck.first_delivery_time])  #truck.props['time']])
+            ['leaving_hub_at', truck.props['time']])
         route_builder = RouteBuilder(route_parameters)
         route = route_builder.build_route()
 

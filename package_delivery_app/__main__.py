@@ -102,19 +102,12 @@ def run_program(distance_csv, package_csv):
         truck = sorted(trucks,
                        key=lambda t: (t.props['time'], t.props['ID']))[0]
 
-        # TEMPORARY
-        print(f"\nTruck ID is {truck.props['ID']}; time {truck.props['time']}")
-
         packages_ready = truck.get_available_packages(
             packages, Destination_Corrections)
 
         # if truck does not see any packages ready, have truck wait until the
         # time of the last destination-correction, then re-check for packages
-        # UPDATE: I will actually see if it has < 1/4 package load
-        # HA! This update saves 13 miles by preventing truck 2 from taking pkg
-        #38 AT 10:01 to loc 20 then taking pkg 9 to the SAME place AFTER 10:20
-        # if (len(packages_ready) == 0 and
-        if (len(packages_ready) < (Truck.max_packages / 4) and
+        if (len(packages_ready) == 0 and
                 len(Destination_Corrections) > 0):
             latest_correction = max([c.time for c in Destination_Corrections])
             if truck.props['time'] < latest_correction:
@@ -136,6 +129,7 @@ def run_program(distance_csv, package_csv):
         route = route_builder.build_route()
 
         if route_display_wanted and route != []:
+            print(f"\nFOR Truck {truck.props['ID']}, AT {truck.props['time']}")
             route_builder.display_route()
 
         truck.load(route_builder.get_packages())

@@ -30,6 +30,13 @@ Tip: use Python's \_\_doc\_\_ function to learn more about a package or class.
   - Example: print(package_delivery_app.Hash.\_\_doc\_\_)
 
 ## More Information
+#### Beware
+I've learned through recent testing (i.e. in my last 5-10 coding hours) that this overall solution is fragile. 
+
+Parts of it are robust, but there is some fundamental flaw in the logic when it comes to deadlines; I have tricks to get deadlines met, but not a good enough fundamental mechamism; I kind of lucked out with my sample data. I've banged my head enough on this--I have probably put 150-200 hours into this project--and must concede that despite my attempts to control complexity, it's a bit of a reach for my current skill level. 
+
+I hope that I come back to it in the future, and I hope that when I do, I find it easy to reason through what needs to be changed and make it more robust.
+
 #### Purposes
  - Satisfy requirements for a Western Governors University course.
  - Go beyond those requirements; explore building a "real" Python application.

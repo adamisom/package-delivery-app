@@ -132,12 +132,9 @@ class RouteBuilder():
 
     def get_most_urgent_packages(self):
         '''Return list of packages left with deadline in 2 hours or less.'''
-        # two_hours_from_now = Time_Custom.clone(self.leaving_hub_at)
-        # two_hours_from_now.add_time(120)
         return [pkg for pkg in self.ready_pkgs
                 if pkg.props['deadline'] and
                 self.is_deadline_urgent(pkg.props['deadline'])]
-                # pkg.props['deadline'] <= two_hours_from_now]
 
     def get_truck_constraint_packages(self):
         '''Return list of packages left that must go on this truck.'''
@@ -147,12 +144,9 @@ class RouteBuilder():
 
     def get_other_deadline_packages(self):
         '''Return list of packages left with deadline over 2 hours from now.'''
-        # two_hours_from_now = Time_Custom.clone(self.leaving_hub_at)
-        # two_hours_from_now.add_time(120)
         return [pkg for pkg in self.ready_pkgs
                 if pkg.props['deadline'] and
                 not self.is_deadline_urgent(pkg.props['deadline'])]
-                # pkg.props['deadline'] > two_hours_from_now]
 
     def get_packages_on_the_way(self, pkg_load):
         '''Return list of packages destined for same place as any package in
@@ -266,8 +260,8 @@ class RouteBuilder():
         return pkgs_to_load
 
     def construct_stops(self, pkgs_to_load):
-        '''Construct stops for packages, in nearest-neighbor order, and append
-        them to the route. AM I CHANGING THIS?'''
+        '''Construct stops for packages, in nearest-neighbor order (deadline
+        packages first, then other packages), and append to route.'''
         deadline_pkgs = [p for p in pkgs_to_load if p.props['deadline']]
         locs = list(set([pkg.props['location'].num for pkg in deadline_pkgs]))
 
@@ -292,28 +286,18 @@ class RouteBuilder():
             locs.remove(nearest.loc)
 
     def get_index_of_last_urgent_deadline(self):
-        '''FILL ME IN.'''
+        '''Return index of last stop having urgent deadline, if any.'''
         index_of_last_urgent = None
-
-        # TODO?: replae all this with a max idx of ([list comp of urgent pkgs])
         for index, stop in enumerate(self.route):
             for pkg in stop.pkgs:
                 if (pkg.props['deadline'] and
                         self.is_deadline_urgent(pkg.props['deadline'])):
                     index_of_last_urgent = index
-
         return index_of_last_urgent
 
     def add_nearby_neighbors(self, acceptable_increase):
         '''Add nearby neighbors found throughout the route-so-far if doing so
-        wouldn't increase distance much (determined by acceptable_increase).
-
-        TEMPORARY: Also only do so STARTING AFTER the last urgent deadline-pkg
-        so rename stop_index, mauybe, but definitely set it right
-        '''
-        # stop_index = 0
-
-        # first, find the last stop on route so far having an urgent deadline
+        wouldn't increase distance much (determined by acceptable_increase).'''
         stop_index = self.get_index_of_last_urgent_deadline() or 0
 
         while (len(self.get_packages()) < self.max_load and
@@ -361,110 +345,6 @@ class RouteBuilder():
                 self.route.append(RouteBuilder.Stop(
                     nearest.loc, nearest.dist, at_this_stop))
 
-    def deadline_packages_guaranteed_ontime(self, maybe_stops):
-        '''FILL ME IN/Clarify proj = projected. I MAY NOT NEED THIS.(Worth?)'''
-        #     8. loop NN route and if any stop arrival > deadline, return False
-        #     9. else return True
-        for index, maybe_stop in enumerate(maybe_stops):
-            if index == 0:
-                continue
-
-            if maybe_stop[3] > maybe_stop[2]:  # 3=arrival 2=deadline
-                return False
-        return True
-
-    def construct_maybe_stops(self, locs, maybe_stops):
-        '''FILL ME IN.'''
-        nn_route = [(1, [], None, self.leaving_hub_at)]
-        maybe_stops_copy = maybe_stops[:]
-        locs_copy = locs[:]
-        distance_so_far = 0
-
-        current_location = 1  # start at hub
-        while len(maybe_stops_copy) > 0:
-            nearest = self.find_nearest(current_location, locs_copy)
-            distance_so_far += nearest.dist
-            current_location = nearest.loc
-
-            maybe_stop, = [maybe_stop for maybe_stop in maybe_stops_copy
-                           if maybe_stop[0] == nearest.loc]
-
-            avg_speed = 18  # self.speed_function(...)
-            cumulative_minutes = 60 * (distance_so_far / avg_speed)
-            projected_arrival = Time_Custom.clone(self.leaving_hub_at)
-            projected_arrival.add_time(cumulative_minutes)
-
-            nn_route.append((*maybe_stop, projected_arrival))  # append tuple
-
-            maybe_stops_copy.remove(maybe_stop)
-            locs_copy.remove(nearest.loc)
-
-        return nn_route
-
-    def forbid_impossible_deadline_combinations(self, packages):
-        '''Return package-list which is sure to meet all deadlines;
-        if it was already sure to be possible, no changes will be made.
-
-        As input it takes a list of only packages that have deadlines.
-
-        The reason that considering only deadline packages can guarantee that
-        they still all get delivered on time when more stops and packages are
-        added later is because there is at least one route that improve_route
-        will find in all its permutations that meets deadlines: the one where
-        all deadline stops are visited first before any others.
-
-        Note that the naive nearest-neighbors check used by this method is only
-        a quick-n-dirty way to assess whether all deadlines could be met early
-        on in the route-building process--before a proper route is made at
-        all, let alone before it's handed over to improve_route.
-
-        FURTHER NOTE that this function does not use the Truck's speed-function
-        flexibility as it was not deemed worth the effort. An assumption of
-        this program is the truck is always going 18mph, stops included; I made
-        it more flexible in places, but not here... iu.e.
-        I built other parts of this program to be flexible via accommodating an
-        actual speed function in the future. However, I did not deem it worth
-        the effort to make this particular function flexible wrt speed function
-        '''
-        deadline_pkgs = [pkg for pkg in packages if pkg.props['deadline']]
-
-        # 1. get stop loc#s for deadline pkgs, AND PREPEND with stop 1/hub
-        locs = list(set([pkg.props['location'].num for pkg in deadline_pkgs]))
-        maybe_stops = [(loc, [pkg for pkg in deadline_pkgs
-                              if pkg.props['location'].num == loc])
-                       for loc in locs]
-
-        # 2. get earliest deads for those stop loc#s
-        maybe_stops = [(ms[0], ms[1],
-                        min([pkg.props['deadline'] for pkg in deadline_pkgs
-                             if pkg.props['location'].num == ms[0]]))
-                       for ms in maybe_stops]
-
-        # 3. construct NN route
-        # 4. compute times for each stop
-        nn_route = self.construct_maybe_stops(locs, maybe_stops)
-
-        # 5. while helper deadlines_met is false and length > 0
-        # 6. remove PACKAGES furthest from hub (and loop)
-        while (not self.deadline_packages_guaranteed_ontime(nn_route) and
-               len(maybe_stops) > 0):
-            furthest = self.sort_locs_by_hub_closeness(locs)[-1]
-            pkgs_there = [pkg for pkg in deadline_pkgs
-                          if pkg.props['location'].num == furthest]
-
-            locs.remove(furthest)
-            maybe_stop, = [ms for ms in maybe_stops if ms[0] == furthest]
-            maybe_stops.remove(maybe_stop)
-
-            # KEY (subtract furthest pkgs from deadline_pkgs):
-            deadline_pkgs = list(set(deadline_pkgs) - set(pkgs_there))
-
-        #     7. re-compute times for each stop (replacing MaybeStop)
-            nn_route = self.construct_maybe_stops(locs, maybe_stops)
-
-        # 10. return new list that may have some pkgs excluded
-        return deadline_pkgs
-
     def build_route(self):
         '''Return a delivery route (list of stops).'''
         if len(self.ready_pkgs) == 0:
@@ -502,8 +382,8 @@ class RouteBuilder():
 
         # TODO: split out/separate truck-constraint from step I
         # if self.leaving_hub_at > Time_Custom(9, 45, 00):
-        pkgs_to_load = self.forbid_impossible_deadline_combinations(
-            pkgs_to_load)
+        # pkgs_to_load = self.forbid_impossible_deadline_combinations(
+        #     pkgs_to_load)
         # ALSO TODO: forbid partial deliver groups again after the above, but
         # not quite: just plain remove any partial deliver goroups since if any
         # partials remain after forbid_impossib, they CAN'T all be deliv ontime

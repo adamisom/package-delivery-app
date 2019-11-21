@@ -1,29 +1,29 @@
-TASKS LEFT before I leave this project alone:
-	1 x ensure it now works w/tests
-	2 o refactor/improve my new methods/r_b functionality including comments, starting at is_deadline_urgent / 272
-	including refactoring forbid_impos to return pkgs list
-	also, fiddle with acceptable_increase again
-	3 x slightly improve d-c to tell user to type 'no'/enter, as well as add newlines at 'it must match' and 'the exception' in the d-c instructions for locations; also delete my unneeded print statements like get_avail.. 
-	4 o see if I can make it shorter, esp. at end it's taking long trips back to hub
-	5 o update/verify readme AND package-version
-	6 o FINISH WRITEUP
-	7 o submit
-
-OH YEAH. 
-A problem I noticed erlier is my forbid_impossible
-returns but that return goes nowhere, so it might 
-as well not exist. which makes me wonder, do I even 
-need all that? if I can easily salvage it then yes,
-since code would be buggy w/o it. 
-===========
 TODO list
 For better code but ~same functionality:
 
+Major stuff: 
+------------
+- The overall solution is buggy and fragile. 
+How? 
+Well, if you add the forbid_impossible method to route_builder that was present in commit dfb7e30 and the several commits before that one, the code actually takes longer. Think about that.
+The route worked fine, so clearly the found_impossible functionality wasn't fixing a problem. Instead, that new functionality somehow made the code worse.
+But think about it more.
+Right now there's nothing guaranteeing that all deadlines can be met, and there's no good logic to exclude packages or stops wherein a given route couldn't meet all deadlines--I simply lucked out for my sample data.
+It's fascinating really -- I found a loal minimum in a way; it's kind of like I overfit some data.
+Anyway, this main fact that deadlines are not guaranteed, and the ancillary puzzler that trying to add this functionality actually didn't help my code but did in fact hurt it, are just the tip of the iceberg in terms of the fragileness of my solution.
+Right now, any change to the central logic (so, most notably any changes to build_route) result in route_helpers throwing that Min error 'could not meet all deadlines'. To be specific, moving truck constraints below deadline constraints, that is, moving truck constraint to a lower block (and adding calls to forbid_overfilling and forbid_partial), somehow causes the Min error. Think about that; it doesn't make any sense.
+What /does/ make sense for truck constraint to be moved down i.e. to be a lower priority, since trucks make multiple trips. What /doesn't/ make sense is that moving the truck constraint down throws the error, which I suppose means that it's forbid_partial call results in adding another deadline; however, I tried to prevent that (albeit I don't know if I ever committed that code) by having an additional RouteBuilder method to remove any remaining deadline packages from self.ready_pkgs. Somehow I did that, thought it worked (but didn't test it well), moved the truck constraint down, and then got the Min error.
+Sigh.
+
+Minor stuff:
+------------
 - Print functionality: there are many possibilities:
 	- Say "Press Enter to continue" instead of showing it all at once!
 	- Use terminal get-window size IN ORDER TO
 		- get width and then replace all my carefully-manually-inserted
 		newlines with (80% width) or something like that
+
+- Refactor main and/or Truck and/or route_builder to not use hardcoded 8:00 AM value for first delivery time.
 
 - Hash: adjust __setitem__ to reduce count when replacing
 items that themselves were Hashes (and which thus contributed

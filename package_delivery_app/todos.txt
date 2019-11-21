@@ -32,6 +32,10 @@ lead to unnecesarily large __props.
 
 - Hash: _flatten and _deepcopy could both be made shorter
 
+- Truck and Package: Use the IN_TRANSIT Package Enum state!
+Turns out I totally forgot to use it! So right now packages just
+say 'AT_HUB' even after the truck picked them up, until they're delivered.
+
 - Truck and Package: pass destination-correction time from
 update_corrected_packages to Package's
 update_wrong_destination_as_corrected and have that method

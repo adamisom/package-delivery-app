@@ -354,12 +354,13 @@ class RouteBuilder():
 
         groups = self.grouped_deliver_with_constraints()
 
-        #    I.    Add urgent packages first[, and those on the way.]?
-        # If truck is leaving after its initial run, get non-urgent packages
-        # with deadlines too. Also add any that must be delivered with those.
+        #    I.    Add urgent packages first, and those that must leave on
+        # this truck. Additionally, if truck is leaving after its initial 8 AM
+        # run, get non-urgent packages. Then add any packages that must be
+        # delivered together with any of the above.
         # Note that 8:00am is the initial run for a truck, and this is an
-        # assumption also made by the Truck class.
-        # Also--unrelated--note that no Stops for the route are created yet.
+        # assumption also made by the Truck class. Finally, note that no actual
+        # stops for the route are created in this phase--that's phase IV.
         pkgs_to_load = self.get_most_urgent_packages()
         pkgs_to_load = self.forbid_overfilling_load([], pkgs_to_load)
 
@@ -376,47 +377,30 @@ class RouteBuilder():
         pkgs_to_load = self.forbid_overfilling_load(pkgs_to_load, more_to_load)
         pkgs_to_load = self.forbid_partial_deliver_groups(groups, pkgs_to_load)
 
-        #    III.  Check whether it is possible to deliver all of the deadline
-        # packages in pkgs_to_load on time, and if not, remove one at a time
-        # (starting with those furthest from the hub) until it is possible.
-
-        # TODO: split out/separate truck-constraint from step I
-        # if self.leaving_hub_at > Time_Custom(9, 45, 00):
-        # pkgs_to_load = self.forbid_impossible_deadline_combinations(
-        #     pkgs_to_load)
-        # ALSO TODO: forbid partial deliver groups again after the above, but
-        # not quite: just plain remove any partial deliver goroups since if any
-        # partials remain after forbid_impossib, they CAN'T all be deliv ontime
-        # wait, what am I talking about? improve_route could STILL just
-        # go to the deadline package locations first...
-
-        #    IV.   Add truck-constraint packages, plus those that would be 'on
-        # the way' and any that must be delivered-with.
-
-        #    IV.   Add other deliver-with groups that will fit, smallest-first,
+        #    III.  Add other deliver-with groups that will fit, smallest-first,
         # then remove packages in remaining groups from consideration. The idea
         # for the first part of that is to get deliver-with packages out of the
         # way as soon as possible, and the idea for the second part is to not
         # have to worry about partial groups again while route-building.
-        #
-        # Note: it is likely the first route of the day will be longer than
-        # successive trips, as it is mostly driven by package constraints,
+        ############
+        # Side Note: it is likely the first route of the day will be longer
+        # than successive trips, as it is mostly driven by package constraints,
         # rather than nearest-neighbors / distance.
         pkgs_to_load = self.add_more_deliverwith_groups(pkgs_to_load, groups)
 
-        #    V.    Construct stops from pkgs_to_load and add to route.
+        #    IV.   Construct stops from pkgs_to_load and add to route.
         self.construct_stops(pkgs_to_load)
 
-        #    VI.   Look for nearby neighbors between each stop-pair on route
+        #    V.    Look for nearby neighbors between each stop-pair on route
         # Note: ~1.65 performed well for my sample data and seems sensible to
-        # me, but you may find a different value better for your data.
+        # me, but you may find a different value better for different data.
         acceptable_increase = 1.65
         self.add_nearby_neighbors(acceptable_increase)
 
-        #    VII.  Add more stops near the end of the route
+        #    VI.   Add more stops near the end of the route
         self.add_stops_at_end()
 
-        #    VIII. Re-order stops on route to get shorter total distance,
+        #    VII.  Re-order stops on route to get shorter total distance,
         # so long as deadlines wouldn't be missed.
         self.add_final_stop()
 
@@ -428,6 +412,6 @@ class RouteBuilder():
                                    self.speed_function, self.leaving_hub_at,
                                    RouteBuilder.Stop)
 
-        #    IX.   Convert Stops on route to StopPluses and return route
+        #    VIII. Convert Stops on route to StopPluses and return route
         self.convert_to_stopplus()
         return self.route

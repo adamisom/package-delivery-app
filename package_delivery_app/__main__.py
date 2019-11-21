@@ -2,7 +2,7 @@
 import sys
 from .cli import (say_hello, ask_if_snapshot_wanted, handle_snapshot_request,
                   ask_if_package_histories_wanted, ask_if_route_display_wanted,
-                  get_destination_corrections)
+                  get_destination_corrections, make_snapshot)
 from .load import load_data
 from .classes.time_custom import Time_Custom
 from .classes.hash import Hash
@@ -152,12 +152,19 @@ def run_program(distance_csv, package_csv):
     if package_histories_wanted:
         display_packages_with_history(packages)
 
+    # For WGU C950 project submission:
+    # make_snapshot(Time_Custom(9, 00, 00), packages)
+    # make_snapshot(Time_Custom(10, 00, 00), packages)
+    # make_snapshot(Time_Custom(13, 00, 00), packages)
+
 
 if __name__ == '__main__':
     try:
         dist_csv = sys.argv[1]
         pkg_csv = sys.argv[2]
     except IndexError:
-        raise IndexError('You didn\'t provide both required csv files')
+        # raise IndexError('You didn\'t provide both required csv files')
+        dist_csv = '/Users/adamisom/Desktop/WGUPS Distance Table.csv'
+        pkg_csv = '/Users/adamisom/Desktop/WGUPS Package File.csv'
 
     run_program(dist_csv, pkg_csv)

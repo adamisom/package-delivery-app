@@ -29,15 +29,17 @@ Reminder: wrap filepaths in quotes if they have any spaces.
 Tip: use Python's \_\_doc\_\_ function to learn more about a package or class.
   - Example: print(package_delivery_app.Hash.\_\_doc\_\_)
 
-## More Information
+## Further Information
 #### Purposes
  - Satisfy requirements for a Western Governors University course.
  - Go beyond those requirements; explore building a "real" Python application.
 
-#### Notable requirements & features:
+#### Custom Hash and time classes:
+- Custom Hash and time classes are used. The Hash class was designed to (nearly) replicate Python dictionaries.
+
+#### Features:
 - Route takes into account several kinds of constraints, such as: deadlines, packages needing to have their destination corrected (having the wrong destination initially), sets of packages needing to go together, and so on.
-- Users can request snapshots of the delivery status of each package
-- Custom Hash and time classes are used. The Hash class was designed to (nearly) replicate Python dictionaries (a Hash class of some kind was a course requirement).
+- Users can request snapshots of the delivery status of each package.
 
 #### Assumptions:
 - Trucks maintain a constant speed of 18 miles per hour at all times.
@@ -46,8 +48,8 @@ Tip: use Python's \_\_doc\_\_ function to learn more about a package or class.
 ## Code Style
 This project adheres to pep8. Idiomatic or 'Pythonic' ways were preferred, with the exception that I prefer the from/import style of imports.
 
-## Logo
-The logo is a composite of 'noncommercial use with modification' images, except the Python logo which I don't think has the 'with modification' qualifier.
+## Note on the Logo
+I designed the logo--a composite of 'noncommercial use with modification' images, except for the Python logo, which I don't think has the 'with modification' qualifier.
 
 ## License
 MIT (see LICENSE.txt for details)

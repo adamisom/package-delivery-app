@@ -1,20 +1,6 @@
 TODO list
 For better code but ~same functionality:
 
-Major stuff: 
-------------
-- The overall solution is buggy and fragile. 
-How? 
-Well, if you add the forbid_impossible method to route_builder that was present in commit dfb7e30 and the several commits before that one, the code actually takes longer. Think about that.
-The route worked fine, so clearly the found_impossible functionality wasn't fixing a problem. Instead, that new functionality somehow made the code worse.
-But think about it more.
-Right now there's nothing guaranteeing that all deadlines can be met, and there's no good logic to exclude packages or stops wherein a given route couldn't meet all deadlines--I simply lucked out for my sample data.
-It's fascinating really -- I found a loal minimum in a way; it's kind of like I overfit some data.
-Anyway, this main fact that deadlines are not guaranteed, and the ancillary puzzler that trying to add this functionality actually didn't help my code but did in fact hurt it, are just the tip of the iceberg in terms of the fragileness of my solution.
-Right now, any change to the central logic (so, most notably any changes to build_route) result in route_helpers throwing that Min error 'could not meet all deadlines'. To be specific, moving truck constraints below deadline constraints, that is, moving truck constraint to a lower block (and adding calls to forbid_overfilling and forbid_partial), somehow causes the Min error. Think about that; it doesn't make any sense.
-What /does/ make sense for truck constraint to be moved down i.e. to be a lower priority, since trucks make multiple trips. What /doesn't/ make sense is that moving the truck constraint down throws the error, which I suppose means that it's forbid_partial call results in adding another deadline; however, I tried to prevent that (albeit I don't know if I ever committed that code) by having an additional RouteBuilder method to remove any remaining deadline packages from self.ready_pkgs. Somehow I did that, thought it worked (but didn't test it well), moved the truck constraint down, and then got the Min error.
-Sigh.
-
 Minor stuff:
 ------------
 - Print functionality: there are many possibilities:
@@ -33,20 +19,10 @@ lead to unnecesarily large __props.
 - Hash: _flatten and _deepcopy could both be made shorter
 
 - Truck and Package: Use the IN_TRANSIT Package Enum state!
-Turns out I totally forgot to use it! So right now packages just
-say 'AT_HUB' even after the truck picked them up, until they're delivered.
+Turns out I totally forgot to use it!
 
 - Truck and Package: pass destination-correction time from
 update_corrected_packages to Package's
 update_wrong_destination_as_corrected and have that method
 append a history record to indicate when the delivery-status
 changed from wrong-destination to at-hub.
-
-- Add TESTS!
-	- Hash and Regex: convert tests to Python's built-in
-	unittest or an actual testing module instead of my sad
-	current print-statement crutches.
-	- Algorithms': add automated tests route_builder and
-	route_helpers
-	- General: add automated tests that walk through the whole
-	app from start to finish ('integration' test(s))
